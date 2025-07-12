@@ -221,3 +221,13 @@ body {
         font-size: 0.8rem;
     }
 }
+.btn-export {
+    background-color: #1d6f42;
+    border-color: #1a633b;
+    color: white;
+}
+
+.btn-export:hover {
+    background-color: #175a35;
+    border-color: #144c2d;
+}

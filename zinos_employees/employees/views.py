@@ -1,8 +1,10 @@
 from django.shortcuts import render, get_object_or_404
 from .models import Employee, Attendance, SalaryPayment, Department
-from django.db.models import Count, Q
+from django.db.models import Count, Q,Avg
 from datetime import datetime
 from django.contrib.auth.decorators import login_required
+from openpyxl import Workbook
+from django.http import HttpResponse
 
 
 @login_required
@@ -160,3 +162,39 @@ def calculate_salary(request, pk):
         'current_month': datetime.now().month,
         'current_year': datetime.now().year
     })
+def export_employees_to_excel(request):
+    # جلب بيانات الموظفين
+    employees = Employee.objects.all().select_related('department', 'manager')
+    
+    # إنشاء ملف Excel
+    response = HttpResponse(content_type='application/ms-excel')
+    response['Content-Disposition'] = f'attachment; filename="employees_{datetime.now().strftime("%Y-%m-%d")}.xlsx"'
+    
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "الموظفون"
+    
+    # إضافة العناوين
+    columns = [
+        'الرقم', 'الاسم', 'القسم', 'المدير المسؤول',
+        'نوع التوظيف', 'تاريخ التعيين', 'الراتب', 'الهاتف', 'البريد الإلكتروني'
+    ]
+    ws.append(columns)
+    
+    # إضافة البيانات
+    for emp in employees:
+        ws.append([
+            emp.id,
+            emp.name,
+            emp.department.name if emp.department else '',
+            emp.manager.name if emp.manager else '',
+            emp.get_employee_type_display(),
+            emp.hire_date.strftime("%Y-%m-%d") if emp.hire_date else '',
+            emp.salary,
+            emp.phone,
+            emp.email
+        ])
+    
+    # حفظ الملف
+    wb.save(response)
+    return response
