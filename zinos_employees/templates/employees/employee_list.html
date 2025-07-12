@@ -1,0 +1,180 @@
+{% extends 'employees/base.html' %}
+{% load static %}
+
+{% block title %}قائمة الموظفين والمديرين{% endblock %}
+
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/employees.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="header"><i class="fas fa-users-cog me-2"></i>{% block header %}قائمة الموظفين والمديرين{% endblock %}</h1>
+        <a href="/admin/employees/employee/add/" class="btn btn-success btn-lg">
+            <i class="fas fa-user-plus me-2"></i>إضافة موظف جديد
+        </a>
+    </div>
+
+    <!-- قسم المديرين -->
+    <div class="card shadow-lg mb-5">
+        <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+            <h4 class="mb-0"><i class="fas fa-user-tie me-2"></i> قائمة المديرين</h4>
+            <span class="badge bg-white text-info fs-6">{{ managers.count }} مدير</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th width="5%">#</th>
+                            <th width="20%">الاسم</th>
+                            <th width="15%">القسم</th>
+                            <th width="15%">عدد الموظفين</th>
+                            <th width="15%">نوع التوظيف</th>
+                            <th width="15%">تاريخ التعيين</th>
+                            <th width="15%">إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for manager in managers %}
+                        <tr class="manager-highlight">
+                            <td>{{ forloop.counter }}</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar me-3 bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                        {{ manager.name|slice:":1" }}
+                                    </div>
+                                    <div>
+                                        <strong>{{ manager.name }}</strong>
+                                        <div class="text-muted small">{{ manager.email|default:"-" }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="department-badge">{{ manager.department.name|default:"-" }}</span>
+                            </td>
+                            <td>
+                                <span class="badge rounded-pill bg-primary">{{ manager.subordinates.count }}</span>
+                            </td>
+                            <td>{{ manager.get_employee_type_display }}</td>
+                            <td>
+                                <span class="date-badge">{{ manager.hire_date|date:"Y/m/d"|default:"-" }}</span>
+                            </td>
+                            <td>
+                                <div class="d-flex">
+                                    <a href="{% url 'employee_detail' manager.pk %}" class="btn btn-sm btn-primary me-2 action-btn">
+                                        <i class="fas fa-eye me-1"></i> عرض
+                                    </a>
+                                    <a href="/admin/employees/employee/{{ manager.pk }}/change/" class="btn btn-sm btn-warning action-btn">
+                                        <i class="fas fa-edit me-1"></i> تعديل
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-4 empty-list">
+                                <i class="fas fa-user-tie fa-3x mb-3 text-muted"></i>
+                                <h5 class="text-muted">لا يوجد مديرون مسجلون</h5>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- قسم جميع الموظفين -->
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h4 class="mb-0"><i class="fas fa-users me-2"></i> قائمة جميع الموظفين</h4>
+            <span class="badge bg-white text-primary fs-6">{{ employees.count }} موظف</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th width="5%">#</th>
+                            <th width="15%">الاسم</th>
+                            <th width="15%">القسم</th>
+                            <th width="15%">المدير المسؤول</th>
+                            <th width="10%">نوع التوظيف</th>
+                            <th width="10%">تاريخ التعيين</th>
+                            <th width="10%">الراتب</th>
+                            <th width="20%">إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for employee in employees %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar me-3 bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                        {{ employee.name|slice:":1" }}
+                                    </div>
+                                    <div>
+                                        <strong>{{ employee.name }}</strong>
+                                        <div class="text-muted small">{{ employee.phone|default:"-" }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="department-badge">{{ employee.department.name|default:"-" }}</span>
+                            </td>
+                            <td>
+                                {% if employee.manager %}
+                                <a href="{% url 'employee_detail' employee.manager.pk %}" class="badge bg-info text-decoration-none">
+                                    <i class="fas fa-user-tie me-1"></i>{{ employee.manager.name }}
+                                </a>
+                                {% else %}
+                                <span class="badge bg-secondary">غير معين</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge 
+                                    {% if employee.employee_type == 'FT' %}bg-success
+                                    {% elif employee.employee_type == 'PT' %}bg-warning text-dark
+                                    {% else %}bg-dark{% endif %}">
+                                    {{ employee.get_employee_type_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="date-badge">{{ employee.hire_date|date:"Y/m/d"|default:"-" }}</span>
+                            </td>
+                            <td>
+                                <span class="salary-badge">{{ employee.salary }} ر.س</span>
+                            </td>
+                            <td>
+                                <div class="d-flex">
+                                    <a href="{% url 'employee_detail' employee.pk %}" class="btn btn-sm btn-primary me-2 action-btn">
+                                        <i class="fas fa-eye me-1"></i> عرض
+                                    </a>
+                                    <a href="/admin/employees/employee/{{ employee.pk }}/change/" class="btn btn-sm btn-warning me-2 action-btn">
+                                        <i class="fas fa-edit me-1"></i> تعديل
+                                    </a>
+                                    <a href="/admin/employees/employee/{{ employee.pk }}/delete/" class="btn btn-sm btn-danger action-btn">
+                                        <i class="fas fa-trash me-1"></i> حذف
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center py-4 empty-list">
+                                <i class="fas fa-users fa-3x mb-3 text-muted"></i>
+                                <h5 class="text-muted">لا يوجد موظفون مسجلون</h5>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

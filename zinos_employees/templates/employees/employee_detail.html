@@ -1,0 +1,86 @@
+{% extends 'employees/base.html' %}
+
+{% block title %}تفاصيل الموظف - {{ employee.name }}{% endblock %}
+{% block header %}تفاصيل الموظف: {{ employee.name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>المعلومات الشخصية</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>القسم:</strong> {{ employee.department.name }}</p>
+                <p><strong>نوع التوظيف:</strong> {{ employee.get_employee_type_display }}</p>
+                <p><strong>تاريخ التعيين:</strong> {{ employee.hire_date|date:"Y/m/d" }}</p>
+                <p><strong>الراتب الأساسي:</strong> {{ employee.salary }} ر.س</p>
+                <p><strong>الهاتف:</strong> {{ employee.phone }}</p>
+                <p><strong>البريد الإلكتروني:</strong> {{ employee.email }}</p>
+                <p><strong>العنوان:</strong> {{ employee.address }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>إحصائيات الشهر الحالي</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>أيام العمل:</strong> {{ working_days }} يوم</p>
+                <p><strong>الشهر الحالي:</strong> {{ current_month }}/{{ current_year }}</p>
+                <a href="{% url 'calculate_salary' employee.pk %}" class="btn btn-warning">
+                    <i class="fas fa-calculator"></i> حساب الراتب
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5>سجل الحضور الأخير (آخر 30 يوم)</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>التاريخ</th>
+                        <th>الحضور</th>
+                        <th>وقت الدخول</th>
+                        <th>وقت الخروج</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for attendance in attendances %}
+                    <tr>
+                        <td>{{ attendance.date|date:"Y/m/d" }}</td>
+                        <td>
+                            {% if attendance.is_present %}
+                                <span class="badge bg-success">حاضر</span>
+                            {% else %}
+                                <span class="badge bg-danger">غائب</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ attendance.check_in|time:"H:i" }}</td>
+                        <td>
+                            {% if attendance.check_out %}
+                                {{ attendance.check_out|time:"H:i" }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center">لا توجد سجلات حضور</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
