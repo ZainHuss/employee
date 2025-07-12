@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -136,3 +137,6 @@ ALLOWED_HOSTS = ['*']
 # أو حدد عنوان IP الخاص بك
 # ALLOWED_HOSTS = ['192.168.1.100']  # استبدل بعنوان IP الخاص بك
 
+SUIT_CONFIG = {
+    'ADMIN_NAME': 'لوحة التحكم'
+}
