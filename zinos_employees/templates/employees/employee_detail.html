@@ -1,86 +1,211 @@
 {% extends 'employees/base.html' %}
+{% load static %}
 
 {% block title %}تفاصيل الموظف - {{ employee.name }}{% endblock %}
-{% block header %}تفاصيل الموظف: {{ employee.name }}{% endblock %}
+
+{% block header %}
+<div class="d-flex justify-content-between align-items-center">
+    <h2 class="mb-0">تفاصيل الموظف: {{ employee.name }}</h2>
+    <a href="{% url 'calculate_salary' employee.pk %}" class="btn btn-primary">
+        <i class="fas fa-calculator"></i> حساب الراتب
+    </a>
+</div>
+{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-6">
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5>المعلومات الشخصية</h5>
+<div class="container-fluid">
+    <!-- الصف العلوي: الصورة والمعلومات الأساسية -->
+    <div class="row mb-4">
+        <!-- بطاقة الصورة -->
+        <div class="col-lg-3 col-md-4 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    {% if employee.image and employee.image.url %}
+                    <img src="{{ employee.image.url }}" 
+                         class="img-thumbnail rounded-circle mb-3 employee-profile-img"
+                         alt="صورة الموظف {{ employee.name }}"
+                         onerror="this.onerror=null;this.src='{% static &#x27;images/default_avatar.png&#x27; %}'">>
+                    {% else %}
+                    <div class="profile-placeholder rounded-circle d-flex align-items-center justify-content-center mb-3">
+                        <i class="fas fa-user fa-4x text-muted"></i>
+                    </div>
+                    {% endif %}
+                    <h3 class="mb-3">{{ employee.name }}</h3>
+                    <div class="employee-status-badge mb-3">
+                        <span class="badge bg-{% if employee.employee_type == 'FT' %}success{% elif employee.employee_type == 'PT' %}warning text-dark{% else %}info{% endif %}">
+                            {{ employee.get_employee_type_display }}
+                        </span>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'admin:employees_employee_change' employee.id %}" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-edit"></i> تعديل الملف
+                        </a>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                <p><strong>القسم:</strong> {{ employee.department.name }}</p>
-                <p><strong>نوع التوظيف:</strong> {{ employee.get_employee_type_display }}</p>
-                <p><strong>تاريخ التعيين:</strong> {{ employee.hire_date|date:"Y/m/d" }}</p>
-                <p><strong>الراتب الأساسي:</strong> {{ employee.salary }} ر.س</p>
-                <p><strong>الهاتف:</strong> {{ employee.phone }}</p>
-                <p><strong>البريد الإلكتروني:</strong> {{ employee.email }}</p>
-                <p><strong>العنوان:</strong> {{ employee.address }}</p>
+        </div>
+
+        <!-- بطاقة المعلومات الشخصية -->
+        <div class="col-lg-5 col-md-8 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-id-card me-2"></i>المعلومات الشخصية</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li class="mb-3">
+                                    <h6 class="text-muted mb-1"><i class="fas fa-building me-2"></i>القسم</h6>
+                                    <p class="mb-0">{{ employee.department.name|default:"-" }}</p>
+                                </li>
+                                <li class="mb-3">
+                                    <h6 class="text-muted mb-1"><i class="fas fa-calendar-alt me-2"></i>تاريخ التعيين</h6>
+                                    <p class="mb-0">{{ employee.hire_date|date:"Y/m/d"|default:"-" }}</p>
+                                </li>
+                                <li class="mb-3">
+                                    <h6 class="text-muted mb-1"><i class="fas fa-phone me-2"></i>الهاتف</h6>
+                                    <p class="mb-0">{{ employee.phone|default:"-" }}</p>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li class="mb-3">
+                                    <h6 class="text-muted mb-1"><i class="fas fa-money-bill-wave me-2"></i>الراتب الأساسي</h6>
+                                    <p class="mb-0">{{ employee.salary|floatformat:2 }} ر.س</p>
+                                </li>
+                                <li class="mb-3">
+                                    <h6 class="text-muted mb-1"><i class="fas fa-envelope me-2"></i>البريد الإلكتروني</h6>
+                                    <p class="mb-0">{{ employee.email|default:"-" }}</p>
+                                </li>
+                                <li class="mb-3">
+                                    <h6 class="text-muted mb-1"><i class="fas fa-map-marker-alt me-2"></i>العنوان</h6>
+                                    <p class="mb-0">{{ employee.address|default:"-" }}</p>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- بطاقة الإحصائيات -->
+        <div class="col-lg-4 col-md-12 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>إحصائيات الشهر الحالي</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6 mb-4">
+                            <div class="stat-card bg-light p-3 rounded">
+                                <h2 class="text-primary mb-0">{{ working_days|default:"0" }}</h2>
+                                <p class="mb-0 text-muted">أيام العمل</p>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-4">
+                            <div class="stat-card bg-light p-3 rounded">
+                                <h2 class="text-success mb-0">{{ current_month|default:"-" }}/{{ current_year|default:"-" }}</h2>
+                                <p class="mb-0 text-muted">الشهر الحالي</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="progress mb-3">
+                        <div class="progress-bar bg-success" role="progressbar" 
+                             style="width:  attendance_percentage default '0' "
+                             aria-valuenow="{{ attendance_percentage|default:'0' }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                            {{ attendance_percentage|default:"0" }}%
+                        </div>
+                    </div>
+                    <p class="text-muted text-center mb-0">نسبة الحضور لهذا الشهر</p>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="col-md-6">
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5>إحصائيات الشهر الحالي</h5>
-            </div>
-            <div class="card-body">
-                <p><strong>أيام العمل:</strong> {{ working_days }} يوم</p>
-                <p><strong>الشهر الحالي:</strong> {{ current_month }}/{{ current_year }}</p>
-                <a href="{% url 'calculate_salary' employee.pk %}" class="btn btn-warning">
-                    <i class="fas fa-calculator"></i> حساب الراتب
-                </a>
+    <!-- بطاقة سجل الحضور -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-history me-2"></i>سجل الحضور (آخر 30 يوم)</h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if attendances %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="20%">التاريخ</th>
+                                    <th width="15%">الحالة</th>
+                                    <th width="15%">وقت الدخول</th>
+                                    <th width="15%">وقت الخروج</th>
+                                    <th width="15%">المدة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for attendance in attendances %}
+                                <tr>
+                                    <td>{{ attendance.date|date:"Y/m/d" }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if attendance.status == 'present' %}success{% elif attendance.status == 'absent' %}danger{% else %}warning text-dark{% endif %}">
+                                            {{ attendance.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ attendance.check_in|time:"H:i"|default:"-" }}</td>
+                                    <td>{{ attendance.check_out|time:"H:i"|default:"-" }}</td>
+                                    <td>
+                                        {% if attendance.check_in and attendance.check_out %}
+                                            {{ attendance.working_hours|floatformat:2 }} ساعة
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info text-center mb-0 mx-3 my-3">
+                        <i class="fas fa-info-circle me-2"></i>لا توجد سجلات حضور
+                    </div>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<div class="card">
-    <div class="card-header">
-        <h5>سجل الحضور الأخير (آخر 30 يوم)</h5>
-    </div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th>التاريخ</th>
-                        <th>الحضور</th>
-                        <th>وقت الدخول</th>
-                        <th>وقت الخروج</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for attendance in attendances %}
-                    <tr>
-                        <td>{{ attendance.date|date:"Y/m/d" }}</td>
-                        <td>
-                            {% if attendance.is_present %}
-                                <span class="badge bg-success">حاضر</span>
-                            {% else %}
-                                <span class="badge bg-danger">غائب</span>
-                            {% endif %}
-                        </td>
-                        <td>{{ attendance.check_in|time:"H:i" }}</td>
-                        <td>
-                            {% if attendance.check_out %}
-                                {{ attendance.check_out|time:"H:i" }}
-                            {% else %}
-                                -
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="4" class="text-center">لا توجد سجلات حضور</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
+<style>
+    .employee-profile-img {
+        width: 200px;
+        height: 200px;
+        object-fit: cover;
+    }
+    
+    .profile-placeholder {
+        width: 200px;
+        height: 200px;
+        margin: 0 auto;
+        background-color: #f8f9fa;
+    }
+    
+    .stat-card {
+        transition: transform 0.3s;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // يمكنك إضافة أي كود JavaScript هنا عند الحاجة
+});
+</script>
 {% endblock %}

@@ -5,6 +5,10 @@ from datetime import datetime
 from django.contrib.auth.decorators import login_required
 from openpyxl import Workbook
 from django.http import HttpResponse
+from .forms import EmployeeForm
+from django.shortcuts import redirect
+
+
 
 
 @login_required
@@ -198,3 +202,13 @@ def export_employees_to_excel(request):
     # حفظ الملف
     wb.save(response)
     return response
+def add_employee(request):
+    if request.method == 'POST':
+        form = EmployeeForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('employee_list')
+    else:
+        form = EmployeeForm()
+    
+    return render(request, 'employees/employee_form.html', {'form': form})
