@@ -14,15 +14,16 @@ class DepartmentAdmin(admin.ModelAdmin):
 @admin.register(Employee)
 class EmployeeAdmin(admin.ModelAdmin):
     list_display = ('name', 'department_info', 'employee_type_display', 
-                    'salary_display', 'hire_date_display', 'manager_info', 
-                    'contact_info')
+                   'salary_display', 'hire_date_display', 'manager_info', 
+                   'contact_info', 'image_preview')
+    
     list_filter = ('department', 'employee_type')
     search_fields = ('name', 'department__name', 'phone', 'email')
     list_select_related = ('department', 'manager')
     
     fieldsets = (
         ('المعلومات الأساسية', {
-            'fields': ('name', 'department', 'employee_type', 'salary', 'hire_date')
+            'fields': ('name', 'department', 'employee_type', 'salary', 'hire_date', 'image')
         }),
         ('معلومات الاتصال', {
             'fields': ('phone', 'email', 'address')
@@ -31,6 +32,8 @@ class EmployeeAdmin(admin.ModelAdmin):
             'fields': ('manager',)
         }),
     )
+    
+    readonly_fields = ('image_preview',)
     
     def department_info(self, obj):
         return obj.department.name if obj.department else '-'
@@ -51,7 +54,7 @@ class EmployeeAdmin(admin.ModelAdmin):
     def manager_info(self, obj):
         if obj.manager:
             return format_html('<a href="{}">{}</a>', 
-                             f'/admin/hr/employee/{obj.manager.id}/change/',
+                             f'/admin/employees/employee/{obj.manager.id}/change/',
                              obj.manager.name)
         return '-'
     manager_info.short_description = 'المدير المسؤول'
@@ -64,10 +67,17 @@ class EmployeeAdmin(admin.ModelAdmin):
             contact.append(f"بريد: {obj.email}")
         return " | ".join(contact) if contact else '-'
     contact_info.short_description = 'معلومات الاتصال'
+    
+    def image_preview(self, obj):
+        if obj.image:
+            return format_html('<img src="{}" width="50" height="50" style="border-radius:50%;object-fit:cover;" />', 
+                             obj.image.url)
+        return "-"
+    image_preview.short_description = 'الصورة'
 
 @admin.register(Attendance)
 class AttendanceAdmin(admin.ModelAdmin):
-    list_display = ('employee_info', 'date_display', 'status_display', 
+    list_display = ('employee_info', 'date_display', 'status_display',
                    'check_in_display', 'check_out_display', 'notes_short')
     list_filter = ('date', 'is_present', 'employee__department')
     search_fields = ('employee__name', 'notes')
@@ -99,7 +109,7 @@ class AttendanceAdmin(admin.ModelAdmin):
 
 @admin.register(SalaryPayment)
 class SalaryPaymentAdmin(admin.ModelAdmin):
-    list_display = ('employee_info', 'period_display', 'working_days_display', 
+    list_display = ('employee_info', 'period_display', 'working_days_display',
                    'actual_salary_display', 'payment_date_display', 'approved_by_info')
     list_filter = ('month', 'year', 'employee__department')
     search_fields = ('employee__name', 'notes')
@@ -128,7 +138,7 @@ class SalaryPaymentAdmin(admin.ModelAdmin):
     def approved_by_info(self, obj):
         if obj.approved_by:
             return format_html('<a href="{}">{}</a>', 
-                             f'/admin/hr/employee/{obj.approved_by.id}/change/',
+                             f'/admin/employees/employee/{obj.approved_by.id}/change/',
                              obj.approved_by.name)
         return '-'
     approved_by_info.short_description = 'وافق عليه'

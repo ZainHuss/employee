@@ -221,3 +221,161 @@ body {
         font-size: 0.8rem;
     }
 }
+.btn-export {
+    background-color: #1d6f42;
+    border-color: #1a633b;
+    color: white;
+}
+
+.btn-export:hover {
+    background-color: #175a35;
+    border-color: #144c2d;
+}
+/* تنسيقات صفحة تفاصيل الموظف */
+.employee-profile-img {
+    border: 3px solid #dee2e6;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.employee-profile-img:hover {
+    transform: scale(1.03);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+
+.info-card {
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.info-card .card-header {
+    border-radius: 10px 10px 0 0 !important;
+}
+/* تنسيقات صفحة تفاصيل الموظف */
+.employee-profile-img {
+    width: 180px;
+    height: 180px;
+    object-fit: cover;
+    border: 3px solid #fff;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.employee-profile-img:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+}
+
+.profile-placeholder {
+    width: 180px;
+    height: 180px;
+    margin: 0 auto;
+    background-color: #f8f9fa;
+    border: 3px solid #dee2e6;
+}
+
+.stat-card {
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.card {
+    border: none;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.card-header {
+    border-radius: 10px 10px 0 0 !important;
+    padding: 15px 20px;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0,123,255,0.05);
+}
+
+@media (max-width: 768px) {
+    .employee-profile-img,
+    .profile-placeholder {
+        width: 120px;
+        height: 120px;
+    }
+}
+/* تنسيقات صفحة تفاصيل الموظف */
+.employee-profile-img {
+    border: 3px solid #dee2e6;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.employee-profile-img:hover {
+    transform: scale(1.03);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+
+.info-card {
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.info-card .card-header {
+    border-radius: 10px 10px 0 0 !important;
+}
+/* تنسيقات صفحة تفاصيل الموظف */
+.employee-profile-img {
+    width: 180px;
+    height: 180px;
+    object-fit: cover;
+    border: 3px solid #fff;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.employee-profile-img:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+}
+
+.profile-placeholder {
+    width: 180px;
+    height: 180px;
+    margin: 0 auto;
+    background-color: #f8f9fa;
+    border: 3px solid #dee2e6;
+}
+
+.stat-card {
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.card {
+    border: none;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.card-header {
+    border-radius: 10px 10px 0 0 !important;
+    padding: 15px 20px;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0,123,255,0.05);
+}
+
+@media (max-width: 768px) {
+    .employee-profile-img,
+    .profile-placeholder {
+        width: 120px;
+        height: 120px;
+    }
+}

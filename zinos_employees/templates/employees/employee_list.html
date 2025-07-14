@@ -10,11 +10,18 @@
 
 {% block content %}
 <div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="header"><i class="fas fa-users-cog me-2"></i>{% block header %}قائمة الموظفين والمديرين{% endblock %}</h1>
-        <a href="/admin/employees/employee/add/" class="btn btn-success btn-lg">
-            <i class="fas fa-user-plus me-2"></i>إضافة موظف جديد
+<div class="mb-4 d-flex justify-content-between">
+    <div>
+        <a href="/admin/employees/employee/add/" class="btn btn-success">
+            <i class="fas fa-plus"></i> إضافة موظف جديد
         </a>
+    </div>
+    <div>
+        <a href="{% url 'export_employees' %}" class="btn btn-primary">
+            <i class="fas fa-file-excel"></i> تصدير إلى Excel
+        </a>
+    </div>
+</div>
     </div>
 
     <!-- قسم المديرين -->

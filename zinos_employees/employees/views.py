@@ -1,9 +1,31 @@
 from django.shortcuts import render, get_object_or_404
 from .models import Employee, Attendance, SalaryPayment, Department
-from django.db.models import Count, Q
+from django.db.models import Count, Q,Avg
 from datetime import datetime
 from django.contrib.auth.decorators import login_required
+from openpyxl import Workbook
+from django.http import HttpResponse
+from django.utils import timezone
+from django.shortcuts import redirect
+from django import forms
+# أضف هذا في أعلى الملف
 
+class EmployeeForm(forms.ModelForm):
+    class Meta:
+        model = Employee
+        fields = '__all__'
+        widgets = {
+            'hire_date': forms.DateInput(attrs={'type': 'date'}),
+            'phone': forms.TextInput(attrs={'placeholder': 'ادخل رقم الهاتف'}),
+            'image': forms.FileInput(attrs={'class': 'form-control-file'})
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # تحسين عرض حقل المدير ليعرض فقط الموظفين الذين هم مدراء
+        self.fields['manager'].queryset = Employee.objects.annotate(
+            num_subordinates=Count('subordinates')
+        ).filter(num_subordinates__gt=0)
 
 @login_required
 def employee_list(request):
@@ -83,29 +105,16 @@ def manager_detail(request, pk):
     })
 
 
-@login_required
 def employee_detail(request, pk):
-    employee = get_object_or_404(Employee, pk=pk)
+    employee = get_object_or_404(Employee.objects.select_related('department', 'manager'), pk=pk)
     
+    # حساب إحصائيات الحضور
+    current_month = timezone.now().month
+    current_year = timezone.now().year
     attendances = Attendance.objects.filter(employee=employee).order_by('-date')[:30]
     
-    current_month = datetime.now().month
-    current_year = datetime.now().year
-    working_days = Attendance.objects.filter(
-        employee=employee,
-        date__month=current_month,
-        date__year=current_year,
-        is_present=True
-    ).count()
-    
-    # معلومات المدير إذا كان الموظف لديه مدير
-    manager_info = None
-    if employee.manager:
-        manager_info = {
-            'id': employee.manager.id,
-            'name': employee.manager.name,
-            'department': employee.manager.department.name if employee.manager.department else ''
-        }
+    working_days = attendances.filter(is_present=True).count()
+    attendance_percentage = round((working_days / 30) * 100)  # 30 يوم كحد أقصى
     
     return render(request, 'employees/employee_detail.html', {
         'employee': employee,
@@ -113,10 +122,8 @@ def employee_detail(request, pk):
         'working_days': working_days,
         'current_month': current_month,
         'current_year': current_year,
-        'manager_info': manager_info
+        'attendance_percentage': attendance_percentage,
     })
-
-
 @login_required
 def calculate_salary(request, pk):
     employee = get_object_or_404(Employee, pk=pk)
@@ -160,3 +167,61 @@ def calculate_salary(request, pk):
         'current_month': datetime.now().month,
         'current_year': datetime.now().year
     })
+def export_employees_to_excel(request):
+    # جلب بيانات الموظفين
+    employees = Employee.objects.all().select_related('department', 'manager')
+    
+    # إنشاء ملف Excel
+    response = HttpResponse(content_type='application/ms-excel')
+    response['Content-Disposition'] = f'attachment; filename="employees_{datetime.now().strftime("%Y-%m-%d")}.xlsx"'
+    
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "الموظفون"
+    
+    # إضافة العناوين
+    columns = [
+        'الرقم', 'الاسم', 'القسم', 'المدير المسؤول',
+        'نوع التوظيف', 'تاريخ التعيين', 'الراتب', 'الهاتف', 'البريد الإلكتروني'
+    ]
+    ws.append(columns)
+    
+    # إضافة البيانات
+    for emp in employees:
+        ws.append([
+            emp.id,
+            emp.name,
+            emp.department.name if emp.department else '',
+            emp.manager.name if emp.manager else '',
+            emp.get_employee_type_display(),
+            emp.hire_date.strftime("%Y-%m-%d") if emp.hire_date else '',
+            emp.salary,
+            emp.phone,
+            emp.email
+        ])
+    
+    # حفظ الملف
+    wb.save(response)
+    return response
+def add_employee(request):
+    if request.method == 'POST':
+        form = EmployeeForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('employee_list')
+    else:
+        form = EmployeeForm()
+    
+    return render(request, 'employees/employee_form.html', {'form': form})
+
+def edit_employee(request, pk):
+    employee = get_object_or_404(Employee, pk=pk)
+    if request.method == 'POST':
+        form = EmployeeForm(request.POST, request.FILES, instance=employee)
+        if form.is_valid():
+            form.save()
+            return redirect('employee_detail', pk=employee.pk)
+    else:
+        form = EmployeeForm(instance=employee)
+    
+    return render(request, 'employees/employee_form.html', {'form': form})
