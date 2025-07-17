@@ -123,7 +123,7 @@ class AttendanceAdmin(admin.ModelAdmin):
 @admin.register(SalaryPayment)
 class SalaryPaymentAdmin(admin.ModelAdmin):
     list_display = ('employee_info', 'period_display', 'working_days_display',
-                   'actual_salary_display', 'payment_date_display', 'approved_by_info')
+                   'base_salary_display','net_salary_display', 'payment_date_display', 'approved_by_info')
     list_filter = ('month', 'year', 'employee__department')
     search_fields = ('employee__name', 'notes')
     list_select_related = ('employee', 'approved_by', 'employee__department')
@@ -139,10 +139,14 @@ class SalaryPaymentAdmin(admin.ModelAdmin):
     def working_days_display(self, obj):
         return obj.working_days if obj.working_days is not None else '-'
     working_days_display.short_description = 'أيام العمل'
+
+    def net_salary_display(self, obj):
+        return obj.net_salary  # أو أي معالجة تريدها
+    net_salary_display.short_description = 'صافي الراتب'
     
-    def actual_salary_display(self, obj):
-        return f"{obj.actual_salary:,.2f} ر.س" if obj.actual_salary is not None else '-'
-    actual_salary_display.short_description = 'الراتب الفعلي'
+    def base_salary_display(self, obj):
+        return obj.base_salary  # أو أي معالجة تريدها
+    base_salary_display.short_description = 'الراتب الأساسي'
     
     def payment_date_display(self, obj):
         return obj.payment_date.strftime("%Y-%m-%d") if obj.payment_date else '-'
