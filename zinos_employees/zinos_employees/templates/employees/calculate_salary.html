@@ -1,0 +1,36 @@
+{% extends 'employees/base.html' %}
+
+{% block title %}حساب الراتب - {{ employee.name }}{% endblock %}
+{% block header %}حساب راتب الموظف: {{ employee.name }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="month" class="form-label">الشهر</label>
+                    <select class="form-select" id="month" name="month" required>
+                        {% for month in 1..12 %}
+                            <option value="{{ month }}" {% if month == current_month %}selected{% endif %}>{{ month }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="year" class="form-label">السنة</label>
+                    <input type="number" class="form-control" id="year" name="year" 
+                           value="{{ current_year }}" required>
+                </div>
+            </div>
+            <div class="alert alert-info">
+                <strong>ملاحظة:</strong> سيتم حساب الراتب بناءً على أيام الحضور الفعلية لهذا الشهر
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-calculator"></i> حساب الراتب
+            </button>
+            <a href="{% url 'employee_detail' employee.pk %}" class="btn btn-secondary">إلغاء</a>
+        </form>
+    </div>
+</div>
+{% endblock %}
