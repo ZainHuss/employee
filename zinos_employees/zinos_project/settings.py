@@ -78,12 +78,13 @@ WSGI_APPLICATION = 'zinos_project.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'mysql.connector.django',
+        'ENGINE': 'django.db.backends.mysql',
         'NAME': 'Zinos',
         'USER': 'root',
         'PASSWORD': '123456',
         'HOST': 'localhost',
         'PORT': '3306',
+        
         
     }
 }
@@ -139,3 +140,8 @@ ALLOWED_HOSTS = ['*']
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# أضف هذه الإعدادات إذا كنت تستخدم django-cleanup
+DJANGO_CLEANUP = {
+    'IGNORED_MODELS': ['employees.Employee'],  # تجاهل هذا النموذج في التنظيف التلقائي
+}

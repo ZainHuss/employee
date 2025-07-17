@@ -14,3 +14,14 @@ class EmployeeForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['manager'].queryset = Employee.objects.filter(subordinates__isnull=False).distinct()
+class EmployeeAdminForm(forms.ModelForm):
+    class Meta:
+        model = Employee
+        fields = '__all__'
+    
+    def clean_image(self):
+        image = self.cleaned_data.get('image')
+        if image and not hasattr(image, 'file'):  # إذا لم تكن كائن File
+            from django.core.files.base import ContentFile
+            return ContentFile(image, name='uploaded_image.jpg')
+        return image

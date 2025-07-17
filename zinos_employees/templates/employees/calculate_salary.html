@@ -1,36 +1,173 @@
 {% extends 'employees/base.html' %}
+{% load static %}
 
 {% block title %}حساب الراتب - {{ employee.name }}{% endblock %}
-{% block header %}حساب راتب الموظف: {{ employee.name }}{% endblock %}
+
+{% block header %}
+<div class="d-flex justify-content-between align-items-center">
+    <h1 class="page-title">
+        <i class="fas fa-calculator"></i> حساب راتب الموظف: {{ employee.name }}
+    </h1>
+    <a href="{% url 'employee_detail' employee.pk %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-right"></i> العودة لصفحة الموظف
+    </a>
+</div>
+{% endblock %}
 
 {% block content %}
-<div class="card">
-    <div class="card-body">
-        <form method="post">
-            {% csrf_token %}
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label for="month" class="form-label">الشهر</label>
-                    <select class="form-select" id="month" name="month" required>
-                        {% for month in 1..12 %}
-                            <option value="{{ month }}" {% if month == current_month %}selected{% endif %}>{{ month }}</option>
-                        {% endfor %}
-                    </select>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-money-bill-wave"></i> حساب الراتب الشهري
+                    </h5>
                 </div>
-                <div class="col-md-6">
-                    <label for="year" class="form-label">السنة</label>
-                    <input type="number" class="form-control" id="year" name="year" 
-                           value="{{ current_year }}" required>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        {% if form.errors %}
+                        <div class="alert alert-danger mb-4">
+                            <i class="fas fa-exclamation-circle"></i> يوجد أخطاء في البيانات المدخلة:
+                            <ul class="mb-0 mt-2">
+                                {% for field, errors in form.errors.items %}
+                                    {% for error in errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label for="month" class="form-label">الشهر</label>
+                                <select class="form-select {% if form.month.errors %}is-invalid{% endif %}" 
+                                        id="month" name="month" required>
+                                    <option value="">اختر الشهر...</option>
+                                    {% for month in months %}
+                                        <option value="{{ month.0 }}" 
+                                                {% if month.0 == form.month.value|default:current_month|add:0 %}selected{% endif %}>
+                                            {{ month.1 }}
+                                        </option>
+                                    {% empty %}
+                                        <option value="">لا توجد أشهر متاحة</option>
+                                    {% endfor %}
+                                </select>
+                                {% if form.month.errors %}
+                                    <div class="invalid-feedback">
+                                        {{ form.month.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="year" class="form-label">السنة</label>
+                                <input type="number" class="form-control {% if form.year.errors %}is-invalid{% endif %}" 
+                                       id="year" name="year" min="2000" max="{% now 'Y' %}"
+                                       value="{{ form.year.value|default:current_year }}" required>
+                                {% if form.year.errors %}
+                                    <div class="invalid-feedback">
+                                        {{ form.year.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info bg-light-info border-info">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-info-circle me-3 fs-4"></i>
+                                <div>
+                                    <strong>ملاحظة:</strong> سيتم حساب الراتب بناءً على:
+                                    <ul class="mb-0 mt-2">
+                                        <li>أيام الحضور الفعلية لهذا الشهر</li>
+                                        <li>الراتب الأساسي: {{ employee.salary|floatformat:2 }} ر.س</li>
+                                        <li>متوسط الراتب اليومي: {{ employee.daily_salary|floatformat:2 }} ر.س</li>
+                                        {% if employee.deductions %}
+                                        <li>الاستقطاعات: {{ employee.deductions|floatformat:2 }} ر.س</li>
+                                        {% endif %}
+                                        {% if employee.bonuses %}
+                                        <li>العلاوات: {{ employee.bonuses|floatformat:2 }} ر.س</li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if calculation_result %}
+                        <div class="alert alert-success mt-4">
+                            <h5 class="alert-heading">
+                                <i class="fas fa-file-invoice-dollar"></i> نتائج حساب الراتب
+                            </h5>
+                            <hr>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>إجمالي أيام العمل:</strong> {{ calculation_result.working_days }}</p>
+                                    <p><strong>أيام الحضور:</strong> {{ calculation_result.attendance_days }}</p>
+                                    <p><strong>أيام الغياب:</strong> {{ calculation_result.absent_days }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>الراتب الأساسي:</strong> {{ calculation_result.base_salary|floatformat:2 }} ر.س</p>
+                                    <p><strong>الخصومات:</strong> {{ calculation_result.deductions|floatformat:2 }} ر.س</p>
+                                    <p><strong>المكافآت:</strong> {{ calculation_result.bonuses|floatformat:2 }} ر.س</p>
+                                    <p class="fw-bold fs-5">صافي الراتب: {{ calculation_result.net_salary|floatformat:2 }} ر.س</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <button type="submit" class="btn btn-primary px-4 py-2">
+                                <i class="fas fa-calculator me-2"></i> حساب الراتب
+                            </button>
+                            <a href="{% url 'employee_detail' employee.pk %}" class="btn btn-outline-secondary px-4 py-2">
+                                <i class="fas fa-times me-2"></i> إلغاء
+                            </a>
+                        </div>
+                    </form>
                 </div>
             </div>
-            <div class="alert alert-info">
-                <strong>ملاحظة:</strong> سيتم حساب الراتب بناءً على أيام الحضور الفعلية لهذا الشهر
-            </div>
-            <button type="submit" class="btn btn-primary">
-                <i class="fas fa-calculator"></i> حساب الراتب
-            </button>
-            <a href="{% url 'employee_detail' employee.pk %}" class="btn btn-secondary">إلغاء</a>
-        </form>
+        </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card {
+        border-radius: 10px;
+        border: none;
+        overflow: hidden;
+    }
+    
+    .card-header {
+        padding: 1rem 1.5rem;
+    }
+    
+    .form-select, .form-control {
+        padding: 0.5rem 1rem;
+        height: calc(2.5em + 0.75rem + 2px);
+    }
+    
+    .alert-info {
+        border-left: 4px solid #17a2b8;
+    }
+    
+    .alert-success {
+        border-left: 4px solid #28a745;
+    }
+    
+    @media (max-width: 768px) {
+        .d-flex.justify-content-between {
+            flex-direction: column;
+        }
+        
+        .btn {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+    }
+</style>
 {% endblock %}

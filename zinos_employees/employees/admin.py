@@ -1,6 +1,8 @@
 from django.contrib import admin
+from employees import models  
 from django.utils.html import format_html
 from .models import Department, Employee, Attendance, SalaryPayment
+from .forms import EmployeeAdminForm
 
 @admin.register(Department)
 class DepartmentAdmin(admin.ModelAdmin):
@@ -20,6 +22,7 @@ class EmployeeAdmin(admin.ModelAdmin):
     list_filter = ('department', 'employee_type')
     search_fields = ('name', 'department__name', 'phone', 'email')
     list_select_related = ('department', 'manager')
+    form = EmployeeAdminForm
     
     fieldsets = (
         ('المعلومات الأساسية', {
@@ -69,17 +72,21 @@ class EmployeeAdmin(admin.ModelAdmin):
     contact_info.short_description = 'معلومات الاتصال'
     
     def image_preview(self, obj):
-        if obj.image:
-            return format_html('<img src="{}" width="50" height="50" style="border-radius:50%;object-fit:cover;" />', 
-                             obj.image.url)
-        return "-"
-    image_preview.short_description = 'الصورة'
+        if obj.image:  # إذا كان هناك صورة
+            if hasattr(obj.image, 'url'):  # إذا كان حقل الصورة من نوع FileField/ImageField
+                return format_html('<img src="{}" width="50" height="50" />', obj.image.url)
+            else:  # إذا كان بيانات بايت
+                # يمكنك معالجة بيانات البايت هنا أو عرض بديل
+                return format_html('<span>صورة مخزنة كبيانات بايت</span>')
+        return "لا توجد صورة"
+    
+    image_preview.short_description = 'معاينة الصورة'
 
 @admin.register(Attendance)
 class AttendanceAdmin(admin.ModelAdmin):
     list_display = ('employee_info', 'date_display', 'status_display',
                    'check_in_display', 'check_out_display', 'notes_short')
-    list_filter = ('date', 'is_present', 'employee__department')
+    list_filter = ('date', 'status', 'employee__department')
     search_fields = ('employee__name', 'notes')
     list_select_related = ('employee', 'employee__department')
     
@@ -92,7 +99,13 @@ class AttendanceAdmin(admin.ModelAdmin):
     date_display.short_description = 'التاريخ'
     
     def status_display(self, obj):
-        return "حاضر" if obj.is_present else "غائب"
+        # استبدل obj.is_present بـ obj.status == 'present'
+        color = 'green' if obj.status == 'present' else 'red'
+        return format_html(
+            '<span style="color: {};">{}</span>',
+            color,
+            obj.get_status_display()
+        )
     status_display.short_description = 'الحالة'
     
     def check_in_display(self, obj):

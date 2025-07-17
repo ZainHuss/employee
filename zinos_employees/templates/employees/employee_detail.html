@@ -1,6 +1,6 @@
 {% extends 'employees/base.html' %}
 {% load static %}
-
+{% load employee_filters %}
 {% block title %}تفاصيل الموظف - {{ employee.name }}{% endblock %}
 
 {% block header %}
@@ -38,7 +38,7 @@
                         </div>
                         {% endif %}
                         <div class="employee-status-badge">
-                            <span class="badge bg-{{ employee.employee_type|get_employee_badge_color }}">
+                            <span class="badge bg-{{ employee|get_employee_badge_color }}">
                                 {{ employee.get_employee_type_display }}
                             </span>
                         </div>
@@ -183,7 +183,6 @@
                                 </div>
                             </div>
                             <div class="attendance-chart-container">
-                                <!-- سيتم إضافة رسم بياني هنا باستخدام Chart.js -->
                                 <canvas id="attendanceChart" height="200"></canvas>
                             </div>
                         </div>
@@ -221,15 +220,15 @@
                                 <tr>
                                     <td>{{ attendance.date|date:"Y/m/d" }}</td>
                                     <td>
-                                        <span class="badge bg-{% if attendance.is_present %}success{% else %}danger{% endif %}">
-                                            {% if attendance.is_present %}حاضر{% else %}غائب{% endif %}
+                                        <span class="badge bg-{% if attendance.status == 'present' %}success{% else %}danger{% endif %}">
+                                            {{ attendance.get_status_display }}
                                         </span>
                                     </td>
                                     <td>{{ attendance.check_in|time:"H:i"|default:"-" }}</td>
                                     <td>{{ attendance.check_out|time:"H:i"|default:"-" }}</td>
                                     <td>
                                         {% if attendance.check_in and attendance.check_out %}
-                                            {{ attendance.check_out|timeuntil:attendance.check_in }}
+                                            {{ attendance.working_hours|floatformat:2 }} ساعات
                                         {% else %}
                                             -
                                         {% endif %}
@@ -473,8 +472,11 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     // تهيئة أدوات التلميح
-    $(document).ready(function(){
-        $('[data-bs-toggle="tooltip"]').tooltip();
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
     });
     
     // الرسم البياني للحضور
