@@ -1,0 +1,43 @@
+{% extends 'employees/base.html' %}
+
+{% block title %}تسجيل الدخول{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-lg">
+                <div class="card-body p-5">
+                    <h2 class="text-center mb-4">تسجيل الدخول</h2>
+                    
+                    {% if form.errors %}
+                    <div class="alert alert-danger">
+                        اسم المستخدم أو كلمة المرور غير صحيحة. يرجى المحاولة مرة أخرى.
+                    </div>
+                    {% endif %}
+                    
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="id_username" class="form-label">اسم المستخدم</label>
+                            <input type="text" name="username" class="form-control" id="id_username" required>
+                            <div class="invalid-feedback">يرجى إدخال اسم المستخدم</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_password" class="form-label">كلمة المرور</label>
+                            <input type="password" name="password" class="form-control" id="id_password" required>
+                            <div class="invalid-feedback">يرجى إدخال كلمة المرور</div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100 py-2">تسجيل الدخول</button>
+                        
+                        <input type="hidden" name="next" value="{{ next }}">
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

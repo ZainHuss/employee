@@ -1,55 +1,1279 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>نظام إدارة موظفين زينوس | {% block title %}{% endblock %}</title>
-    <!-- تضمين Bootstrap للتصميم -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
-    <!-- أيقونات Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .table-hover tbody tr:hover {
-            background-color: #f8f9fa;
-        }
-        .sidebar {
-            background-color: #f8f9fa;
-            height: 100vh;
-        }
-    </style>
-</head>
-<body>
-    <div class="container-fluid">
-        <div class="row">
-            <!-- الشريط الجانبي -->
-            <div class="col-md-3 sidebar p-4">
-                <h4 class="text-center mb-4">
-                    <i class="fas fa-users-cog"></i> Zinos system
-                </h4>
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="{% url 'employee_list' %}">
-                            <i class="fas fa-list"></i> قائمة الموظفين
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/admin" target="_blank">
-                            <i class="fas fa-cog"></i> لوحة التحكم
-                        </a>
-                    </li>
-                </ul>
-            </div>
 
-            <!-- المحتوى الرئيسي -->
-            <div class="col-md-9 p-4">
-                <h2 class="mb-4">{% block header %}{% endblock %}</h2>
-                {% block content %}{% endblock %}
-            </div>
+    <!-- تضمين Bootstrap للتصميم -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- أيقونات Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <!-- خطوط Google Fonts العربية -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&family=El+Messiri:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Animate.css -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+    />
+
+    <style>
+      :root {
+        --primary-color: #4361ee;
+        --primary-light: rgba(67, 97, 238, 0.1);
+        --primary-dark: #3a0ca3;
+        --secondary-color: #4895ef;
+        --secondary-light: rgba(72, 149, 239, 0.1);
+        --accent-color: #4cc9f0;
+        --success-color: #2ecc71;
+        --warning-color: #f39c12;
+        --danger-color: #e74c3c;
+        --info-color: #3498db;
+        --light-color: #f8f9fa;
+        --dark-color: #212529;
+        --text-color: #2b2d42;
+        --text-muted: #6c757d;
+        --light-bg: #f8fafc;
+        --card-bg: #ffffff;
+        --sidebar-bg: linear-gradient(180deg, #3a0ca3, #4361ee);
+        --dark-opacity: rgba(0, 0, 0, 0.2);
+        --border-radius: 12px;
+        --box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      }
+
+      body {
+        font-family: "Tajawal", "El Messiri", sans-serif;
+        background-color: var(--light-bg);
+        color: var(--text-color);
+        overflow-x: hidden;
+      }
+
+      /* الشريط الجانبي المحسن */
+      .sidebar {
+        background: var(--sidebar-bg);
+        height: 100vh;
+        position: fixed;
+        width: 280px;
+        box-shadow: 5px 0 30px rgba(67, 97, 238, 0.2);
+        transition: var(--transition);
+        z-index: 1000;
+        overflow: hidden;
+        backdrop-filter: blur(5px);
+      }
+
+      .sidebar-brand {
+        padding: 1.8rem 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        text-align: center;
+        transition: var(--transition);
+      }
+
+      .sidebar-brand:hover {
+        transform: translateY(-3px);
+      }
+
+      .nav-link {
+        color: rgba(255, 255, 255, 0.9);
+        padding: 0.85rem 1.5rem;
+        margin: 0.35rem 1rem;
+        border-radius: var(--border-radius);
+        transition: var(--transition);
+        font-weight: 500;
+        font-size: 0.95rem;
+        position: relative;
+        display: flex;
+        align-items: center;
+        backdrop-filter: blur(5px);
+      }
+
+      .nav-link .nav-text {
+        flex: 1;
+      }
+
+      .nav-link .nav-badge {
+        background: rgba(255, 255, 255, 0.15);
+        padding: 0.25rem 0.5rem;
+        border-radius: 50px;
+        font-size: 0.7rem;
+        margin-right: 5px;
+      }
+
+      .nav-link::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        right: -10px;
+        width: 4px;
+        height: 100%;
+        background-color: white;
+        transition: var(--transition);
+        opacity: 0;
+        border-radius: 2px;
+      }
+
+      .nav-link:hover,
+      .nav-link.active {
+        background-color: rgba(255, 255, 255, 0.15);
+        color: white;
+        transform: translateX(-5px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .nav-link.active::before {
+        right: 0;
+        opacity: 1;
+      }
+
+      .nav-link i {
+        width: 22px;
+        text-align: center;
+        margin-left: 10px;
+        font-size: 0.9rem;
+        transition: var(--transition);
+      }
+
+      /* المحتوى الرئيسي */
+      .main-content {
+        margin-right: 280px;
+        min-height: 100vh;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+      }
+
+      /* رأس الصفحة المعدل */
+      .page-header {
+        position: relative;
+        padding-bottom: 15px;
+        margin-bottom: 2.5rem;
+        color: var(--secondary-color);
+      }
+
+      .page-header::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 120px;
+        height: 4px;
+        background: linear-gradient(
+          90deg,
+          var(--primary-color),
+          var(--accent-color)
+        );
+        border-radius: 4px;
+      }
+
+      /* أزرار مخصصة محسنة */
+      .btn-zinos {
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        color: white;
+        border: none;
+        padding: 0.6rem 1.8rem;
+        border-radius: var(--border-radius);
+        transition: var(--transition);
+        font-weight: 500;
+        letter-spacing: 0.5px;
+        box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .btn-zinos::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          135deg,
+          var(--secondary-color),
+          var(--primary-color)
+        );
+        opacity: 0;
+        transition: var(--transition);
+        z-index: 1;
+      }
+
+      .btn-zinos:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 7px 20px rgba(67, 97, 238, 0.4);
+        color: white;
+      }
+
+      .btn-zinos:hover::before {
+        opacity: 1;
+      }
+
+      .btn-zinos span {
+        position: relative;
+        z-index: 2;
+      }
+
+      /* تأثيرات Ripple للأزرار */
+      .btn-ripple {
+        position: absolute;
+        background: rgba(255, 255, 255, 0.4);
+        border-radius: 50%;
+        transform: scale(0);
+        animation: ripple 0.6s linear;
+        pointer-events: none;
+      }
+
+      @keyframes ripple {
+        to {
+          transform: scale(4);
+          opacity: 0;
+        }
+      }
+
+      /* شريط التنقل العلوي المحسن */
+      .top-navbar {
+        background-color: var(--card-bg);
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        padding: 1rem 1.5rem;
+        margin-bottom: 2rem;
+        position: relative;
+        z-index: 100;
+        backdrop-filter: blur(5px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .page-title h4 {
+        font-family: "El Messiri", sans-serif;
+        font-weight: 700;
+        position: relative;
+        padding-bottom: 10px;
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .page-title h4::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 50px;
+        height: 3px;
+        background: linear-gradient(
+          90deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        border-radius: 3px;
+      }
+
+      .breadcrumb {
+        background: transparent;
+        padding: 0;
+        margin-top: 5px;
+      }
+
+      .breadcrumb-item a {
+        color: var(--text-muted);
+        text-decoration: none;
+        transition: var(--transition);
+      }
+
+      .breadcrumb-item a:hover {
+        color: var(--primary-color);
+      }
+
+      .breadcrumb-item.active {
+        color: var(--primary-color);
+        font-weight: 500;
+      }
+
+      /* تأثيرات متحركة محسنة */
+      @keyframes fadeInRight {
+        from {
+          opacity: 0;
+          transform: translateX(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      .animate-fade-in-right {
+        opacity: 0;
+      }
+
+      /* تأثيرات الظهور التدريجي */
+      .fade-in {
+        animation: fadeIn 0.6s ease forwards;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      /* تأثيرات الرفرفة */
+      .floating {
+        animation: floating 3s ease-in-out infinite;
+      }
+
+      @keyframes floating {
+        0% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+        100% {
+          transform: translateY(0px);
+        }
+      }
+
+      /* تكيف مع الشاشات الصغيرة */
+      @media (max-width: 992px) {
+        .sidebar {
+          transform: translateX(-100%);
+          width: 270px;
+        }
+
+        .sidebar.active {
+          transform: translateX(0);
+          box-shadow: 5px 0 50px rgba(67, 97, 238, 0.3);
+        }
+
+        .main-content {
+          margin-right: 0;
+        }
+
+        .top-navbar {
+          border-radius: 0;
+          margin-bottom: 1rem;
+        }
+
+        .stat-card {
+          margin-bottom: 1rem;
+        }
+
+        .page-title h4 {
+          font-size: 1.2rem;
+        }
+      }
+
+      /* تأثيرات خاصة للوضع الداكن */
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --light-bg: #1a1a2e;
+          --card-bg: #16213e;
+          --text-color: #f8f9fa;
+          --text-muted: #adb5bd;
+        }
+
+        .top-navbar,
+        .stat-card,
+        .table {
+          background-color: var(--card-bg);
+          color: var(--text-color);
+        }
+
+        .table th {
+          background-color: var(--primary-dark);
+        }
+
+        .table td {
+          border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+      }
+
+      /* تأثيرات القوائم المنسدلة */
+      .dropdown-menu {
+        border: none;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        padding: 0.5rem;
+        animation: fadeIn 0.2s ease;
+      }
+
+      .dropdown-item {
+        border-radius: 6px;
+        padding: 0.5rem 1rem;
+        transition: all 0.2s ease;
+        font-weight: 500;
+      }
+
+      .dropdown-item:hover {
+        background-color: rgba(67, 97, 238, 0.1);
+        color: var(--primary-color);
+        transform: translateX(-3px);
+      }
+
+      /* تأثيرات الإشعارات */
+      .notification-badge {
+        font-size: 0.6rem;
+        padding: 0.25rem 0.4rem;
+      }
+
+      /* تأثيرات الصور */
+      .img-thumbnail {
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        border: none;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      }
+
+      .img-thumbnail:hover {
+        transform: scale(1.03);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      }
+
+      /* بطاقات الإحصائيات المحسنة */
+      .stat-card {
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: var(--box-shadow);
+        transition: var(--transition);
+        border: none;
+        background-color: var(--card-bg);
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(5px);
+      }
+
+      .stat-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100%;
+        height: 5px;
+        background: linear-gradient(
+          90deg,
+          var(--primary-color),
+          var(--accent-color)
+        );
+      }
+
+      .stat-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+      }
+
+      .stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+        margin-left: auto;
+      }
+
+      .stat-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+      }
+
+      .stat-label {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        margin-bottom: 0.5rem;
+      }
+
+      .stat-change {
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+      }
+
+      .stat-change.positive {
+        color: var(--success-color);
+      }
+
+      .stat-change.negative {
+        color: var(--danger-color);
+      }
+
+      /* تأثيرات الإدخال */
+      .form-control,
+      .form-select {
+        border-radius: 8px;
+        padding: 0.6rem 1rem;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+      }
+
+      .form-control:focus,
+      .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.15);
+      }
+
+      /* تأثيرات البطاقات */
+      .card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+      }
+
+      .card:hover {
+        box-shadow: 0 12px 35px rgba(0, 0, 0, 0.1);
+      }
+
+      /* تأثيرات الألوان */
+      .text-primary {
+        color: var(--primary-color) !important;
+      }
+
+      .bg-primary {
+        background-color: var(--primary-color) !important;
+      }
+
+      /* جداول محسنة */
+      .table {
+        border-collapse: separate;
+        border-spacing: 0;
+        width: 100%;
+        margin-bottom: 1.5rem;
+        background-color: var(--card-bg);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: var(--box-shadow);
+      }
+
+      .table th {
+        background-color: var(--primary-color);
+        color: white;
+        font-weight: 500;
+        padding: 1rem;
+        text-align: right;
+      }
+
+      .table td {
+        padding: 1rem;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        vertical-align: middle;
+      }
+
+      .table-hover tbody tr {
+        transition: var(--transition);
+      }
+
+      .table-hover tbody tr:hover {
+        background-color: rgba(67, 97, 238, 0.05);
+        transform: translateX(5px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
+      }
+
+      .table-responsive {
+        border-radius: var(--border-radius);
+        overflow: hidden;
+      }
+
+      /* تأثيرات حركية متقدمة */
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translate3d(0, 20px, 0);
+        }
+        to {
+          opacity: 1;
+          transform: translate3d(0, 0, 0);
+        }
+      }
+
+      .animate-fade-in-up {
+        animation: fadeInUp 0.6s ease forwards;
+      }
+
+      @keyframes pulse {
+        0% {
+          box-shadow: 0 0 0 0 rgba(67, 97, 238, 0.7);
+        }
+        70% {
+          box-shadow: 0 0 0 10px rgba(67, 97, 238, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(67, 97, 238, 0);
+        }
+      }
+
+      .pulse {
+        animation: pulse 2s infinite;
+      }
+
+      /* تأثيرات الظهور التدريجي */
+      [data-animate] {
+        opacity: 0;
+        animation-fill-mode: forwards;
+      }
+
+      .animate-on-scroll {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.6s ease, transform 0.6s ease;
+      }
+
+      .animate-on-scroll.animated {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      /* نماذج محسنة */
+      .form-control,
+      .form-select {
+        border-radius: var(--border-radius);
+        padding: 0.6rem 1rem;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        transition: var(--transition);
+        background-color: rgba(255, 255, 255, 0.1);
+        color: var(--text-color);
+      }
+
+      .form-control:focus,
+      .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.15);
+        background-color: rgba(255, 255, 255, 0.2);
+      }
+
+      .input-group-text {
+        background-color: rgba(67, 97, 238, 0.1);
+        border-color: rgba(0, 0, 0, 0.1);
+        color: var(--primary-color);
+      }
+
+      /* تأثيرات الفلتر والبحث */
+      .search-box {
+        position: relative;
+      }
+
+      .search-box .form-control {
+        padding-right: 40px;
+      }
+
+      .search-box .search-icon {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+        pointer-events: none;
+      }
+
+      /* تنسيقات جديدة للشريط العلوي */
+      .user-profile-dropdown .user-avatar {
+        width: 40px;
+        height: 40px;
+      }
+
+      .user-profile-dropdown .user-status {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        border: 2px solid var(--card-bg);
+      }
+
+      .user-profile-dropdown .dropdown-toggle::after {
+        display: none;
+      }
+
+      /* تعديلات للعرض على الشاشات الصغيرة */
+      @media (max-width: 768px) {
+        .top-navbar .d-flex.align-items-center {
+          flex-wrap: wrap;
+        }
+
+        .search-box {
+          order: 1;
+          width: 100%;
+          margin-top: 10px;
+        }
+
+        .notifications-dropdown,
+        .quick-actions-dropdown,
+        .user-profile-dropdown {
+          margin-left: 10px;
+          margin-right: 0 !important;
+        }
+      }
+
+      /* تنسيقات إضافية لترتيب العناصر في الشريط العلوي */
+      .top-navbar .d-flex.align-items-center {
+        justify-content: space-between;
+        width: 100%;
+      }
+
+      .top-navbar .search-box {
+        margin-left: auto;
+        margin-right: auto;
+        max-width: 400px;
+      }
+
+      .top-navbar .right-section {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .top-navbar .left-section {
+        display: flex;
+        align-items: center;
+      }
+
+      /* تعديلات لتحسين المسافات */
+      .notifications-dropdown {
+        margin-left: 15px;
+      }
+
+      .quick-actions-dropdown {
+        margin-left: 15px;
+      }
+
+      .user-profile-dropdown {
+        margin-left: 15px;
+      }
+    </style>
+    {% block extra_css %}{% endblock %}
+  </head>
+  <body>
+    <!-- الشريط الجانبي المعدل -->
+    <div class="sidebar">
+      {% load static %}
+
+      <div class="simple-logo">
+        <div class="logo-inner">
+          <h2>Zinos</h2>
+          <div class="logo-line"></div>
         </div>
+      </div>
+
+      <style>
+        .simple-logo {
+          padding: 15px 30px;
+          background-color: white;
+          border: 2px solid #3a0ca3;
+          border-radius: 5px;
+          display: inline-block;
+        }
+
+        .logo-inner {
+          text-align: center;
+        }
+
+        .simple-logo h2 {
+          color: #3a0ca3;
+          margin: 0;
+          font-family: "Arial", sans-serif;
+          font-weight: 700;
+        }
+
+        .logo-line {
+          height: 3px;
+          background: linear-gradient(to right, #3a0ca3, #4361ee);
+          margin-top: 5px;
+        }
+      </style>
+      <ul class="nav flex-column mt-3">
+        <li class="nav-item">
+          <a class="nav-link active" href="{% url 'employee_list' %}">
+            <i class="fas fa-users"></i>
+            <span class="nav-text">قائمة الموظفين</span>
+            <span class="nav-badge">12</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/admin" target="_blank">
+            <i class="fas fa-user-shield"></i>
+            <span class="nav-text">لوحة التحكم</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">
+            <i class="fas fa-chart-pie"></i>
+            <span class="nav-text">التقارير</span>
+            <span class="nav-badge badge bg-warning">جديد</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">
+            <i class="fas fa-calendar-check"></i>
+            <span class="nav-text">الجدولة</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">
+            <i class="fas fa-file-contract"></i>
+            <span class="nav-text">المستندات</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">
+            <i class="fas fa-cogs"></i>
+            <span class="nav-text">الإعدادات</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <!-- المحتوى الرئيسي المعدل -->
+    <div class="main-content">
+      <div class="container-fluid py-4 px-4">
+        <!-- شريط التنقل العلوي المطور -->
+        <div
+          class="top-navbar animate__animated animate__fadeInDown bg-white shadow-sm py-2"
+        >
+          <div class="container-fluid">
+            <div class="d-flex justify-content-between align-items-center">
+              <!-- القسم الأيسر (العنوان وتصغير الشريط الجانبي) -->
+              <div class="left-section d-flex align-items-center">
+                <button
+                  class="sidebar-toggler d-lg-none me-3 border-0 bg-transparent"
+                  type="button"
+                >
+                  <i class="fas fa-bars fs-4 text-primary"></i>
+                </button>
+                <div class="page-title">
+                  <h4 class="mb-0 fw-bold text-primary">
+                    {% block header %}{% endblock %}
+                  </h4>
+                  <nav aria-label="breadcrumb" class="d-none d-md-block">
+                    <ol class="breadcrumb mb-0">
+                      <li class="breadcrumb-item">
+                        <a href="#" class="text-muted"
+                          ><i class="fas fa-home me-1"></i> الرئيسية</a
+                        >
+                      </li>
+                      <li
+                        class="breadcrumb-item active text-primary fw-semibold"
+                        aria-current="page"
+                      >
+                        {% block page_title %}{% endblock %}
+                      </li>
+                    </ol>
+                  </nav>
+                </div>
+              </div>
+
+              <!-- القسم الأيمن (بحث، إشعارات، إجراءات، حساب) -->
+              <div class="right-section d-flex align-items-center">
+                <!-- صندوق البحث مع تأثيرات محسنة -->
+                <div class="search-box mx-2 mx-lg-3">
+                  <form class="position-relative">
+                    <div class="input-group">
+                      <input
+                        type="text"
+                        class="form-control search-input border-end-0 ps-4"
+                        placeholder="ابحث هنا..."
+                        aria-label="Search"
+                      />
+                      <button
+                        class="btn btn-search bg-white border-start-0"
+                        type="submit"
+                      >
+                        <i class="fas fa-search text-muted"></i>
+                      </button>
+                    </div>
+                    <div
+                      class="search-hint text-muted small position-absolute start-0 bottom-0 translate-middle-y ms-4"
+                    >
+                      <i class="fas fa-lightbulb me-1 text-warning"></i> اضغط /
+                      للبحث
+                    </div>
+                  </form>
+                </div>
+
+                <!-- قسم الإجراءات -->
+                <div class="actions-section d-flex align-items-center">
+                  <!-- قائمة الإشعارات المحسنة -->
+                  <div class="notifications-dropdown dropdown me-2 me-lg-3">
+                    <a
+                      href="#"
+                      class="notification-icon position-relative p-2 rounded-circle"
+                      id="notificationsDropdown"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false"
+                    >
+                      <i class="fas fa-bell fs-5 text-muted"></i>
+                      <span
+                        class="notification-badge position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                        >3</span
+                      >
+                    </a>
+                    <div
+                      class="dropdown-menu dropdown-menu-end notification-dropdown p-0 border-0 shadow-lg"
+                    >
+                      <div
+                        class="dropdown-header bg-primary text-white p-3 rounded-top"
+                      >
+                        <div
+                          class="d-flex justify-content-between align-items-center"
+                        >
+                          <h6 class="mb-0 fw-bold">الإشعارات</h6>
+                          <span class="badge bg-white text-primary"
+                            >3 جديدة</span
+                          >
+                        </div>
+                      </div>
+                      <div
+                        class="notification-list p-2"
+                        style="max-height: 350px; overflow-y: auto"
+                      >
+                        <a
+                          href="#"
+                          class="dropdown-item notification-item unread p-3 rounded"
+                        >
+                          <div class="d-flex align-items-center">
+                            <div
+                              class="notification-icon bg-primary-light p-2 rounded-circle me-3"
+                            >
+                              <i class="fas fa-user-plus text-primary"></i>
+                            </div>
+                            <div class="notification-text flex-grow-1">
+                              <h6 class="mb-1 fw-semibold">موظف جديد</h6>
+                              <p class="mb-1 small text-muted">
+                                تمت إضافة أحمد محمد إلى النظام
+                              </p>
+                              <small class="text-muted"
+                                ><i class="far fa-clock me-1"></i> منذ 5
+                                دقائق</small
+                              >
+                            </div>
+                          </div>
+                        </a>
+                        <!-- المزيد من الإشعارات -->
+                      </div>
+                      <div
+                        class="dropdown-footer bg-light p-2 rounded-bottom text-center"
+                      >
+                        <a href="#" class="btn btn-sm btn-outline-primary w-100"
+                          >عرض جميع الإشعارات</a
+                        >
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- الإجراءات السريعة مع تصميم جديد -->
+                  <div class="quick-actions-dropdown dropdown me-2 me-lg-3">
+                    <a
+                      href="#"
+                      class="btn btn-primary btn-sm px-3 py-2 rounded-pill"
+                      id="quickActionsDropdown"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false"
+                    >
+                      <i class="fas fa-plus me-2"></i> إجراء سريع
+                    </a>
+                    <div
+                      class="dropdown-menu dropdown-menu-end p-3 quick-actions-menu border-0 shadow-lg"
+                      style="width: 280px"
+                    >
+                      <h6 class="dropdown-header fw-bold text-primary mb-2">
+                        الإجراءات السريعة
+                      </h6>
+                      <div class="row g-2">
+                        <div class="col-6">
+                          <a
+                            href="#"
+                            class="quick-action-item bg-primary-light p-3 rounded text-center d-block"
+                          >
+                            <div
+                              class="icon-wrapper bg-primary p-3 rounded-circle mb-2 mx-auto"
+                            >
+                              <i class="fas fa-user-plus text-white"></i>
+                            </div>
+                            <span class="fw-semibold">إضافة موظف</span>
+                          </a>
+                        </div>
+                        <div class="col-6">
+                          <a
+                            href="#"
+                            class="quick-action-item bg-success-light p-3 rounded text-center d-block"
+                          >
+                            <div
+                              class="icon-wrapper bg-success p-3 rounded-circle mb-2 mx-auto"
+                            >
+                              <i class="fas fa-file-invoice text-white"></i>
+                            </div>
+                            <span class="fw-semibold">إنشاء فاتورة</span>
+                          </a>
+                        </div>
+                        <!-- المزيد من الإجراءات -->
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- ملف المستخدم مع تصميم أنيق -->
+                  <div class="user-profile-dropdown dropdown">
+                    <a
+                      href="#"
+                      class="d-flex align-items-center text-decoration-none dropdown-toggle p-1 rounded"
+                      id="userDropdown"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false"
+                    >
+                      <div class="user-avatar position-relative me-2">
+                        <img
+                          src="https://via.placeholder.com/40/3a0ca3/ffffff?text=مدير"
+                          alt="صورة المستخدم"
+                          class="rounded-circle border border-2 border-white shadow-sm"
+                        />
+                        <span
+                          class="user-status position-absolute bottom-0 end-0 bg-success rounded-circle border border-2 border-white"
+                          style="width: 10px; height: 10px"
+                        ></span>
+                      </div>
+                      <div class="user-info d-none d-md-block">
+                        <h6 class="mb-0 fw-semibold text-dark">مدير النظام</h6>
+                        <small class="text-muted">Admin</small>
+                      </div>
+                    </a>
+                    <ul
+                      class="dropdown-menu dropdown-menu-end border-0 shadow-lg"
+                      aria-labelledby="userDropdown"
+                    >
+                      <li class="dropdown-header bg-light rounded-top">
+                        <div class="d-flex align-items-center">
+                          <img
+                            src="https://via.placeholder.com/50/3a0ca3/ffffff?text=مدير"
+                            alt="صورة المستخدم"
+                            class="rounded-circle me-2 border border-2 border-primary"
+                          />
+                          <div>
+                            <h6 class="mb-0 fw-bold">مدير النظام</h6>
+                            <small class="text-muted">admin@example.com</small>
+                          </div>
+                        </div>
+                      </li>
+                      <li><hr class="dropdown-divider my-2" /></li>
+                      <li>
+                        <a class="dropdown-item py-2 px-3 rounded" href="#">
+                          <i class="fas fa-user-circle me-2 text-primary"></i>
+                          الملف الشخصي
+                        </a>
+                      </li>
+                      <li>
+                        <a class="dropdown-item py-2 px-3 rounded" href="#">
+                          <i class="fas fa-cog me-2 text-info"></i> الإعدادات
+                        </a>
+                      </li>
+                      <li>
+                        <a class="dropdown-item py-2 px-3 rounded" href="#">
+                          <i class="fas fa-bell me-2 text-warning"></i>
+                          الإشعارات
+                          <span class="badge bg-danger float-end">3</span>
+                        </a>
+                      </li>
+                      <li><hr class="dropdown-divider my-2" /></li>
+                      <li>
+                        <a
+                          class="dropdown-item py-2 px-3 rounded text-danger"
+                          href="{% url 'logout' %}"
+                        >
+                          <i class="fas fa-sign-out-alt me-2"></i> تسجيل الخروج
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- محتوى الصفحة المعدل -->
+        <div class="animate__animated animate__fadeIn">
+          {% block content %}{% endblock %}
+        </div>
+
+        <!-- تذييل الصفحة المعدل -->
+        <footer class="mt-5 pt-4 text-center text-muted small">
+          <p class="mb-1">نظام إدارة الموظفين زينوس &copy; {% now "Y" %}</p>
+          <p class="mb-0">الإصدار 2.1 | جميع الحقوق محفوظة</p>
+        </footer>
+      </div>
     </div>
 
     <!-- سكربتات JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      // تفعيل الشريط الجانبي على الأجهزة الصغيرة
+      document
+        .querySelector(".sidebar-toggler")
+        .addEventListener("click", function () {
+          document.querySelector(".sidebar").classList.toggle("active");
+          document.querySelector("body").classList.toggle("no-scroll");
+        });
+
+      // إغلاق الشريط الجانبي عند النقر خارجها
+      document.addEventListener("click", function (event) {
+        const sidebar = document.querySelector(".sidebar");
+        const toggler = document.querySelector(".sidebar-toggler");
+        const isClickInsideSidebar = sidebar.contains(event.target);
+        const isClickOnToggler =
+          event.target === toggler || toggler.contains(event.target);
+
+        if (
+          !isClickInsideSidebar &&
+          !isClickOnToggler &&
+          window.innerWidth < 992
+        ) {
+          sidebar.classList.remove("active");
+          document.querySelector("body").classList.remove("no-scroll");
+        }
+      });
+
+      // تحسينات JavaScript لتحسين الأداء
+      document.addEventListener("DOMContentLoaded", function () {
+        // تأثيرات الظهور عند التمرير
+        const animateElements = function () {
+          const animatedElements =
+            document.querySelectorAll(".animate-on-scroll");
+
+          const observer = new IntersectionObserver(
+            (entries) => {
+              entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                  const animation =
+                    entry.target.getAttribute("data-animation") || "fadeInUp";
+                  entry.target.classList.add(
+                    "animate__animated",
+                    `animate__${animation}`
+                  );
+                  observer.unobserve(entry.target);
+                }
+              });
+            },
+            { threshold: 0.1 }
+          );
+
+          animatedElements.forEach((el) => observer.observe(el));
+        };
+
+        // تهيئة القوائم المنسدلة
+        const initDropdowns = function () {
+          const dropdowns = document.querySelectorAll(".dropdown");
+
+          dropdowns.forEach((dropdown) => {
+            const toggle = dropdown.querySelector(".dropdown-toggle");
+            const menu = dropdown.querySelector(".dropdown-menu");
+
+            if (toggle && menu) {
+              toggle.addEventListener("click", function (e) {
+                e.preventDefault();
+                const isShown = menu.classList.contains("show");
+
+                // إغلاق جميع القوائم المفتوحة الأخرى
+                document
+                  .querySelectorAll(".dropdown-menu.show")
+                  .forEach((openMenu) => {
+                    if (openMenu !== menu) {
+                      openMenu.classList.remove("show");
+                    }
+                  });
+
+                // تبديل حالة القائمة الحالية
+                if (!isShown) {
+                  menu.classList.add("show");
+                }
+              });
+            }
+          });
+
+          // إغلاق القوائم عند النقر خارجها
+          document.addEventListener("click", function (e) {
+            if (!e.target.closest(".dropdown")) {
+              document
+                .querySelectorAll(".dropdown-menu.show")
+                .forEach((menu) => {
+                  menu.classList.remove("show");
+                });
+            }
+          });
+        };
+
+        // تأثيرات الأزرار
+        const initButtonEffects = function () {
+          const buttons = document.querySelectorAll(".btn-zinos-gradient");
+
+          buttons.forEach((button) => {
+            // تأثير الريبل عند الضغط
+            button.addEventListener("click", function (e) {
+              const x = e.pageX - button.offsetLeft;
+              const y = e.pageY - button.offsetTop;
+
+              const ripple = document.createElement("span");
+              ripple.classList.add("btn-ripple");
+              ripple.style.left = `${x}px`;
+              ripple.style.top = `${y}px`;
+
+              button.appendChild(ripple);
+
+              setTimeout(() => {
+                ripple.remove();
+              }, 1000);
+            });
+          });
+        };
+
+        // تهيئة جميع الوظائف
+        const initAll = function () {
+          animateElements();
+          initDropdowns();
+          initButtonEffects();
+        };
+
+        initAll();
+      });
+
+      // دعم للوضع الداكن
+      const darkModeMediaQuery = window.matchMedia(
+        "(prefers-color-scheme: dark)"
+      );
+
+      const handleDarkModeChange = (e) => {
+        if (e.matches) {
+          document.body.classList.add("dark-mode");
+        } else {
+          document.body.classList.remove("dark-mode");
+        }
+      };
+
+      darkModeMediaQuery.addListener(handleDarkModeChange);
+      handleDarkModeChange(darkModeMediaQuery);
+    </script>
     {% block scripts %}{% endblock %}
-</body>
+  </body>
 </html>

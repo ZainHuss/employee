@@ -145,3 +145,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DJANGO_CLEANUP = {
     'IGNORED_MODELS': ['employees.Employee'],  # تجاهل هذا النموذج في التنظيف التلقائي
 }
+# الإعدادات الأساسية للمصادقة
+LOGIN_URL = 'login'  # أو 'accounts/login/' إذا كنت تستخدم المسار الافتراضي
+LOGIN_REDIRECT_URL = '/employees/'  # الصفحة التي يتم توجيه المستخدم إليها بعد تسجيل الدخول
+LOGOUT_REDIRECT_URL = '/accounts/login/'  # الصفحة التي يتم توجيه المستخدم إليها بعد تسجيل الخروج
