@@ -8,8 +8,8 @@
     <h1 class="page-title">
         <i class="fas fa-calculator"></i> حساب راتب الموظف: {{ employee.name }}
     </h1>
-    <a href="{% url 'employee_detail' employee.pk %}" class="btn btn-outline-secondary">
-        <i class="fas fa-arrow-right"></i> العودة لصفحة الموظف
+    <a href="{% url 'employees:employee_detail' pk=employee.pk %}" class="btn btn-primary">
+        العودة إلى تفاصيل الموظف
     </a>
 </div>
 {% endblock %}
@@ -122,7 +122,7 @@
                             <button type="submit" class="btn btn-primary px-4 py-2">
                                 <i class="fas fa-calculator me-2"></i> حساب الراتب
                             </button>
-                            <a href="{% url 'employee_detail' employee.pk %}" class="btn btn-outline-secondary px-4 py-2">
+                            <a href="{% url 'employees:employee_detail' pk=employee.pk %}" class="btn btn-outline-secondary px-4 py-2">
                                 <i class="fas fa-times me-2"></i> إلغاء
                             </a>
                         </div>

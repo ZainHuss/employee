@@ -154,11 +154,9 @@ class SalaryPaymentAdmin(admin.ModelAdmin):
     
     def approved_by_info(self, obj):
         if obj.approved_by:
-            return format_html('<a href="{}">{}</a>', 
-                             f'/admin/employees/employee/{obj.approved_by.id}/change/',
-                             obj.approved_by.name)
-        return '-'
-    approved_by_info.short_description = 'وافق عليه'
+            return f"{obj.approved_by.get_full_name()} ({obj.approved_by.username})"
+        return "-"
+    approved_by_info.short_description = 'تمت الموافقة بواسطة'
 
 # تخصيص عناوين لوحة الإدارة
 admin.site.site_header = 'نظام إدارة موظفين زينوس'

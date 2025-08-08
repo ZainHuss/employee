@@ -379,3 +379,7 @@ body {
         height: 120px;
     }
 }
+.progress-bar {
+  transition: width 0.5s ease;
+}
+

@@ -108,6 +108,24 @@ class Employee(models.Model):
         null=True, 
         verbose_name=_("صورة الموظف")
     )
+    performance_score = models.FloatField(
+        default=5.0,
+        validators=[MinValueValidator(1.0), MaxValueValidator(10.0)],
+        verbose_name=_("تقييم الأداء (من 10)")
+    )
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name=_("موظف نشط")
+    )
+    resignation_date = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name=_("تاريخ الاستقالة")
+    )
+    resignation_reason = models.TextField(
+        blank=True,
+        verbose_name=_("سبب الاستقالة")
+    )
 
     @property
     def daily_salary(self):
@@ -150,6 +168,7 @@ class Employee(models.Model):
     
     def __str__(self):
         return self.name
+    
     def get_image_url(self):
         """دالة للحصول على رابط الصورة أو صورة افتراضية"""
         if self.image and hasattr(self.image, 'url'):
@@ -161,6 +180,63 @@ class Employee(models.Model):
             temp_file = ContentFile(self.image)
             self.image.save(f'employee_{self.pk}_image.jpg', temp_file)
         super().save(*args, **kwargs)
+
+class PerformanceReview(models.Model):
+    RATING_CHOICES = [
+        (1, 'Poor'),
+        (2, 'Below Average'),
+        (3, 'Average'),
+        (4, 'Good'),
+        (5, 'Excellent'),
+    ]
+    
+    employee = models.ForeignKey(
+        Employee,
+        on_delete=models.CASCADE,
+        related_name='performance_reviews',
+        verbose_name=_("الموظف")
+    )
+    review_date = models.DateField(
+        default=timezone.now,
+        verbose_name=_("تاريخ التقييم")
+    )
+    reviewer = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        verbose_name=_("المقيّم")
+    )
+    rating = models.PositiveIntegerField(
+        choices=RATING_CHOICES,
+        verbose_name=_("التقييم")
+    )
+    comments = models.TextField(
+        blank=True,
+        verbose_name=_("ملاحظات")
+    )
+    goals = models.TextField(
+        blank=True,
+        verbose_name=_("الأهداف")
+    )
+    strengths = models.TextField(
+        blank=True,
+        verbose_name=_("نقاط القوة")
+    )
+    areas_for_improvement = models.TextField(
+        blank=True,
+        verbose_name=_("مجالات التحسين")
+    )
+    
+    class Meta:
+        verbose_name = _("تقييم الأداء")
+        verbose_name_plural = _("تقييمات الأداء")
+        ordering = ['-review_date']
+        indexes = [
+            models.Index(fields=['employee', 'review_date']),
+        ]
+    
+    def __str__(self):
+        return f"{self.employee.name} - {self.review_date} - {self.get_rating_display()}"
 
 class Attendance(models.Model):
     PRESENT = 'present'
@@ -192,11 +268,22 @@ class Attendance(models.Model):
     notes = models.TextField(
         blank=True,
         verbose_name=_("ملاحظات"))
-    # أضف حقل working_hours كحقل فعلي في النموذج بدلاً من خاصية
     working_hours = models.FloatField(
         default=0.0,
         verbose_name=_("ساعات العمل"),
-        editable=False  # لا يمكن تعديله يدوياً
+        editable=False
+    )
+    ABSENCE_TYPES = [
+        ('sick', _('مرض')),
+        ('vacation', _('إجازة')),
+        ('unauthorized', _('غياب غير مبرر')),
+    ]
+    absence_type = models.CharField(
+        max_length=15,
+        choices=ABSENCE_TYPES,
+        blank=True,
+        null=True,
+        verbose_name=_("نوع الغياب")
     )
     
     @property
@@ -228,7 +315,7 @@ class Attendance(models.Model):
             models.Index(fields=['employee', 'date']),
             models.Index(fields=['status']),
             models.Index(fields=['date']),
-            models.Index(fields=['working_hours']),  # أضف index لتحسين الأداء
+            models.Index(fields=['working_hours']),
         ]
     
     def __str__(self):
@@ -305,3 +392,41 @@ class SalaryPayment(models.Model):
     
     def __str__(self):
         return f"{self.employee.name} - {self.month}/{self.year} - {self.net_salary:.2f} ر.س"
+    
+class EmployeePrediction(models.Model):
+    employee = models.ForeignKey(
+        Employee,
+        on_delete=models.CASCADE,
+        related_name='predictions',
+        verbose_name=_("الموظف")
+    )
+    prediction_date = models.DateField(
+        auto_now_add=True,
+        verbose_name=_("تاريخ التنبؤ")
+    )
+    turnover_risk = models.FloatField(
+        validators=[MinValueValidator(0), MaxValueValidator(1)],
+        verbose_name=_("احتمال الاستقالة")
+    )
+    performance_trend = models.FloatField(
+        verbose_name=_("اتجاه الأداء (آخر 3 أشهر)")
+    )
+    recommended_action = models.TextField(
+        blank=True,
+        verbose_name=_("الإجراء المقترح")
+    )
+    
+    class Meta:
+        verbose_name = _("تنبؤ الموظف")
+        verbose_name_plural = _("تنبؤات الموظفين")
+        ordering = ['-prediction_date']
+    
+    def __str__(self):
+        return f"{self.employee.name} - {self.prediction_date}"
+
+class Meta:
+    permissions = [
+        ('view_analytics', 'Can view analytics dashboard'),
+        ('run_predictions', 'Can run predictions manually'),
+        ('manage_reviews', 'Can manage performance reviews'),
+    ]

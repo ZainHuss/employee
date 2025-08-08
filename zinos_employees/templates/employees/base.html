@@ -807,10 +807,17 @@
       </style>
       <ul class="nav flex-column mt-3">
         <li class="nav-item">
-          <a class="nav-link active" href="{% url 'employee_list' %}">
+          <a class="nav-link active"  href="{% url 'employees:employee_list' %}">العودة للقائمة>
             <i class="fas fa-users"></i>
             <span class="nav-text">قائمة الموظفين</span>
             <span class="nav-badge">12</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link"  href="{% url 'employees:analytics_dashboard' %}">لوحة التحليلات >
+            <i class="fas fa-robot"></i>
+            <span class="nav-text">الذكاء الاصطناعي</span>
+            <span class="nav-badge badge bg-success">جديد</span>
           </a>
         </li>
         <li class="nav-item">
