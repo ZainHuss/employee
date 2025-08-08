@@ -1,0 +1,375 @@
+{% extends 'employees/base.html' %}
+{% load custom_filters %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <!-- Page Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4 animate__animated animate__fadeInDown">
+    <div>
+      <h1 class="h2 mb-0 text-gradient">
+        <i class="fas fa-chart-line text-primary mr-2 floating"></i>لوحة التحليلات
+      </h1>
+      <p class="text-muted mt-2">تحليلات تنبؤية وأداء الموظفين</p>
+    </div>
+    <div class="d-flex align-items-center">
+      <span class="badge bg-light-primary text-dark align-self-center pulse">
+        <i class="fas fa-clock mr-1"></i> آخر تحديث: {{ current_date }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Analytics Card -->
+  <div class="card shadow-lg mb-4 border-0 animate__animated animate__fadeInUp">
+    <div class="card-header py-3 d-flex flex-row justify-content-between align-items-center bg-gradient-primary text-white rounded-top">
+      <h6 class="m-0 font-weight-bold">
+        <i class="fas fa-chart-pie mr-2"></i>تحليل أداء الموظفين
+      </h6>
+      <form method="post" class="m-0">
+        {% csrf_token %}
+        <button type="submit" name="run_predictions" class="btn btn-light btn-sm glow-on-hover">
+          <i class="fas fa-sync-alt mr-1"></i> تحديث التحليلات
+        </button>
+      </form>
+    </div>
+    <div class="card-body bg-soft-light">
+      {% if plot_url %}
+      <div class="text-center position-relative">
+        <img src="data:image/png;base64,{{ plot_url }}" 
+             class="img-fluid rounded-lg shadow" 
+             alt="تحليل أداء الموظفين"
+             style="max-height: 450px; border: 1px solid rgba(0,0,0,0.1)">
+        <div class="chart-overlay">
+          <button class="btn btn-sm btn-outline-primary" onclick="downloadChart()">
+            <i class="fas fa-download mr-1"></i>حفظ الصورة
+          </button>
+        </div>
+      </div>
+      {% else %}
+      <div class="text-center py-5 animate__animated animate__pulse">
+        <div class="empty-state">
+          <i class="fas fa-chart-pie fa-4x text-muted mb-3"></i>
+          <h5 class="text-muted">لا تتوفر بيانات للعرض</h5>
+          <p class="text-muted mb-4">يبدو أنه لم يتم تشغيل التحليل بعد</p>
+          <form method="post">
+            {% csrf_token %}
+            <button type="submit" name="run_predictions" class="btn btn-primary btn-lg">
+              <i class="fas fa-play mr-1"></i> تشغيل التحليل الآن
+            </button>
+          </form>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+    {% if plot_url %}
+    <div class="card-footer bg-light text-muted small">
+      <i class="fas fa-info-circle mr-1"></i> يعرض هذا التحليل أداء الموظفين بناءً على تقييماتهم وسجل الحضور
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- High Risk Employees Card -->
+  <div class="card shadow-lg mb-4 border-0 animate__animated animate__fadeInUp">
+    <div class="card-header py-3 bg-gradient-warning text-white rounded-top">
+      <h6 class="m-0 font-weight-bold d-flex align-items-center">
+        <i class="fas fa-exclamation-triangle mr-2"></i> 
+        <span>الموظفون الأكثر عرضة للاستقالة</span>
+        <span class="badge bg-white text-warning ms-auto">{{ high_risk_employees|length }}</span>
+      </h6>
+    </div>
+    <div class="card-body p-0">
+      {% if high_risk_employees %}
+      <div class="table-responsive">
+        <table class="table table-hover table-borderless mb-0">
+          <thead class="bg-light-primary">
+            <tr>
+              <th width="20%" class="border-0">الموظف</th>
+              <th width="15%" class="border-0">القسم</th>
+              <th width="15%" class="border-0">الراتب</th>
+              <th width="20%" class="border-0">مستوى الخطر</th>
+              <th width="30%" class="border-0">التوصية</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for emp in high_risk_employees %}
+            <tr class="align-middle hover-effect">
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="avatar avatar-sm me-3">
+                    {% if emp.employee.image %}
+                    <img src="{{ emp.employee.get_image_url }}" class="rounded-circle" alt="صورة الموظف">
+                    {% else %}
+                    <div class="avatar-placeholder bg-soft-primary">
+                      <i class="fas fa-user"></i>
+                    </div>
+                    {% endif %}
+                  </div>
+                  <div>
+                    <h6 class="mb-0">
+                      <a href="{% url 'employee_detail' emp.employee.pk %}" class="text-decoration-none text-dark">
+                        {{ emp.employee.name }}
+                      </a>
+                    </h6>
+                    <small class="text-muted">{{ emp.employee.get_employee_type_display }}</small>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="badge bg-soft-secondary text-dark">
+                  {{ emp.employee.department.name|default:"-" }}
+                </span>
+              </td>
+              <td>
+                <span class="fw-bold">{{ emp.employee.salary|floatformat:2 }} <small>ر.س</small></span>
+              </td>
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                    <div class="progress-bar bg-{{ emp.turnover_risk|default:0|risk_level_class }}" 
+                         role="progressbar" 
+                         style="width: {{ emp.turnover_risk|default:0|multiply:100 }}%" 
+                         aria-valuenow="{{ emp.turnover_risk|default:0|multiply:100 }}" 
+                         aria-valuemin="0" 
+                         aria-valuemax="100">
+                    </div>
+                  </div>
+                  <span class="fw-bold text-{{ emp.turnover_risk|default:0|risk_level_class }}">
+                    {{ emp.turnover_risk|default:0|multiply:100|floatformat:1 }}%
+                  </span>
+                </div>
+              </td>
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="recommendation-badge bg-soft-{{ emp.recommended_action|default:''|recommendation_color }} text-{{ emp.recommended_action|default:''|recommendation_color }}">
+                    <i class="{{ emp.recommended_action|default:''|recommendation_icon }} me-2"></i>
+                    {{ emp.recommended_action|default:"لا توجد توصية"|truncatechars:40 }}
+                  </div>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="text-center py-5 animate__animated animate__pulse">
+        <div class="empty-state">
+          <i class="fas fa-smile-beam fa-4x text-success mb-3"></i>
+          <h5 class="text-success">لا يوجد موظفين معرضين للخطر</h5>
+          <p class="text-muted mb-4">جميع الموظفين لديهم نسبة خطر أقل من 50%</p>
+          <button class="btn btn-outline-success" onclick="location.reload()">
+            <i class="fas fa-redo mr-1"></i> تحديث الصفحة
+          </button>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+    {% if high_risk_employees %}
+    <div class="card-footer bg-light">
+      <div class="d-flex justify-content-between align-items-center">
+        <div class="text-muted small">
+          <i class="fas fa-info-circle mr-1"></i> يتم تحديث هذه البيانات تلقائياً يومياً
+        </div>
+        <a href="{% url 'export_analytics' %}" class="btn btn-sm btn-outline-primary">
+          <i class="fas fa-file-export mr-1"></i> تصدير التقرير
+        </a>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Department Performance Card -->
+  <div class="card shadow-lg border-0 animate__animated animate__fadeInUp">
+    <div class="card-header py-3 bg-gradient-info text-white rounded-top">
+      <h6 class="m-0 font-weight-bold">
+        <i class="fas fa-building mr-2"></i>أداء الأقسام
+      </h6>
+    </div>
+    <div class="card-body">
+      {% if department_stats %}
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead class="bg-light-info">
+            <tr>
+              <th>القسم</th>
+              <th>عدد الموظفين</th>
+              <th>متوسط الأداء</th>
+              <th>التقييم</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for dept in department_stats %}
+            <tr>
+              <td>{{ dept.name }}</td>
+              <td>{{ dept.employee_count }}</td>
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                    <div class="progress-bar bg-{{ dept.avg_performance|default:0|performance_level_class }}" 
+                         role="progressbar" 
+                         style="width: {{ dept.avg_performance|default:0|multiply:20 }}%" 
+                         aria-valuenow="{{ dept.avg_performance|default:0|multiply:20 }}" 
+                         aria-valuemin="0" 
+                         aria-valuemax="100">
+                    </div>
+                  </div>
+                  <span>{{ dept.avg_performance|default:0|floatformat:1 }}/5</span>
+                </div>
+              </td>
+              <td>
+                <span class="badge bg-soft-{{ dept.avg_performance|default:0|performance_level_class }} text-{{ dept.avg_performance|default:0|performance_level_class }}">
+                  {{ dept.avg_performance|default:0|performance_level_text }}
+                </span>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="text-center py-5">
+        <div class="empty-state">
+          <i class="fas fa-building fa-4x text-muted mb-3"></i>
+          <h5 class="text-muted">لا توجد بيانات عن الأقسام</h5>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Custom CSS styles */
+  .bg-gradient-primary {
+    background: linear-gradient(135deg, #3a0ca3, #4361ee);
+  }
+  .bg-gradient-warning {
+    background: linear-gradient(135deg, #f39c12, #f6c23e);
+  }
+  .bg-gradient-info {
+    background: linear-gradient(135deg, #00b4d8, #48cae4);
+  }
+  .bg-soft-light {
+    background-color: rgba(248, 249, 250, 0.7);
+    backdrop-filter: blur(5px);
+  }
+  .text-gradient {
+    background: linear-gradient(135deg, #3a0ca3, #4361ee);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .card {
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+  }
+  .table-borderless td, .table-borderless th {
+    border: none;
+  }
+  .hover-effect:hover {
+    background-color: rgba(67, 97, 238, 0.05);
+    transform: translateX(5px);
+  }
+  .glow-on-hover:hover {
+    box-shadow: 0 0 15px rgba(67, 97, 238, 0.5);
+  }
+  .chart-overlay {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    opacity: 0;
+    transition: all 0.3s ease;
+  }
+  .text-center:hover .chart-overlay {
+    opacity: 1;
+  }
+  .empty-state {
+    padding: 2rem;
+    background-color: rgba(255, 255, 255, 0.7);
+    border-radius: 12px;
+    border: 1px dashed #dee2e6;
+  }
+  .avatar {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(67, 97, 238, 0.1);
+    color: #4361ee;
+    border-radius: 50%;
+  }
+  .recommendation-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+  }
+  .floating {
+    animation: floating 3s ease-in-out infinite;
+  }
+  @keyframes floating {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+  }
+  .pulse {
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(67, 97, 238, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(67, 97, 238, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(67, 97, 238, 0); }
+  }
+  .bg-soft-primary { background-color: rgba(58, 12, 163, 0.1); }
+  .bg-soft-secondary { background-color: rgba(108, 117, 125, 0.1); }
+  .bg-soft-success { background-color: rgba(40, 167, 69, 0.1); }
+  .bg-soft-danger { background-color: rgba(220, 53, 69, 0.1); }
+  .bg-soft-warning { background-color: rgba(255, 193, 7, 0.1); }
+  .bg-soft-info { background-color: rgba(23, 162, 184, 0.1); }
+  .text-primary { color: #3a0ca3 !important; }
+  .text-secondary { color: #6c757d !important; }
+  .text-success { color: #28a745 !important; }
+  .text-danger { color: #dc3545 !important; }
+  .text-warning { color: #ffc107 !important; }
+  .text-info { color: #17a2b8 !important; }
+</style>
+
+<script>
+  function downloadChart() {
+    const link = document.createElement('a');
+    link.download = 'تحليل-الأداء-{{ current_date }}.png';
+    link.href = document.querySelector('.card-body img').src;
+    link.click();
+  }
+
+  // Initialize progress bars animation
+  document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll('.progress-bar').forEach(bar => {
+      const width = bar.style.width || bar.getAttribute('aria-valuenow') + '%';
+      bar.style.width = '0';
+      setTimeout(() => {
+        bar.style.width = width;
+      }, 300);
+    });
+  });
+</script>
+{% endblock %}

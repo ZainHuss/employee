@@ -1,0 +1,569 @@
+{% extends 'employees/base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #4b6cb7;
+        --primary-dark: #3a56a5;
+        --secondary: #182848;
+        --light: #f8f9fa;
+        --dark: #212529;
+        --gray: #6c757d;
+        --danger: #dc3545;
+    }
+    
+    /* أنماط مخصصة للنموذج */
+    .employee-form-container {
+        background-color: rgba(255, 255, 255, 0.98);
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        margin: 30px auto;
+        max-width: 900px;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        animation: fadeIn 0.5s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .employee-form-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100%;
+        height: 5px;
+        background: linear-gradient(90deg, var(--primary), var(--secondary));
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .form-title {
+        color: var(--primary);
+        position: relative;
+        padding-bottom: 15px;
+        margin-bottom: 30px;
+        font-weight: 700;
+        font-size: 1.8rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .form-title i {
+        margin-left: 10px;
+        font-size: 1.5rem;
+    }
+    
+    .form-title::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 100px;
+        height: 3px;
+        background: linear-gradient(90deg, var(--primary), var(--secondary));
+        border-radius: 3px;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: var(--dark);
+        margin-bottom: 8px;
+        display: block;
+    }
+    
+    .form-label.required::after {
+        content: " *";
+        color: var(--danger);
+    }
+    
+    .form-control, .form-select {
+        border-radius: 8px;
+        padding: 12px 15px;
+        border: 1px solid #ced4da;
+        transition: all 0.3s ease;
+        font-family: 'Tajawal', sans-serif;
+        box-shadow: none !important;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 0.25rem rgba(75, 108, 183, 0.25) !important;
+    }
+    
+    .input-group-text {
+        background-color: #f8f9fa;
+        border-radius: 8px 0 0 8px !important;
+    }
+    
+    .btn-form {
+        border-radius: 8px;
+        padding: 12px 25px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        margin-right: 10px;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 120px;
+    }
+    
+    .btn-form i {
+        margin-left: 8px;
+    }
+    
+    .btn-save {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+    }
+    
+    .btn-save:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 7px 15px rgba(75, 108, 183, 0.4);
+        color: white;
+    }
+    
+    .btn-cancel {
+        background: linear-gradient(135deg, #6c757d, #495057);
+        color: white;
+    }
+    
+    .btn-cancel:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 7px 15px rgba(108, 117, 125, 0.4);
+        color: white;
+    }
+    
+    /* تحسين عرض صورة الموظف */
+    .image-upload-container {
+        border: 2px dashed #dee2e6;
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .image-upload-container:hover {
+        border-color: var(--primary);
+        background-color: rgba(75, 108, 183, 0.05);
+    }
+    
+    .image-preview-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 15px;
+    }
+    
+    .image-preview {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid #e9ecef;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        margin-bottom: 15px;
+    }
+    
+    .upload-icon {
+        font-size: 2.5rem;
+        color: var(--primary);
+        margin-bottom: 10px;
+    }
+    
+    .upload-text {
+        color: var(--gray);
+        font-weight: 500;
+    }
+    
+    /* تأثيرات لحقول النموذج */
+    .form-group {
+        margin-bottom: 25px;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    
+    .form-group:hover {
+        transform: translateX(5px);
+    }
+    
+    /* رسائل الخطأ */
+    .error-message {
+        color: var(--danger);
+        font-size: 0.85rem;
+        margin-top: 5px;
+        display: block;
+    }
+    
+    .is-invalid {
+        border-color: var(--danger) !important;
+    }
+    
+    /* التصميم المتجاوب */
+    @media (max-width: 768px) {
+        .employee-form-container {
+            padding: 20px;
+            margin: 15px;
+        }
+        
+        .form-title {
+            font-size: 1.5rem;
+        }
+        
+        .btn-form {
+            padding: 10px 15px;
+            min-width: 100px;
+            font-size: 0.9rem;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .form-title {
+            font-size: 1.3rem;
+        }
+        
+        .form-control, .form-select {
+            padding: 10px 12px;
+        }
+    }
+</style>
+
+<div class="container">
+    <div class="employee-form-container">
+        <h2 class="form-title">
+            <i class="fas fa-user-edit"></i>
+            {% if form.instance.pk %}تعديل{% else %}إضافة{% endif %} موظف
+        </h2>
+        
+        <form method="post" enctype="multipart/form-data" class="mt-4" novalidate>
+            {% csrf_token %}
+            
+            <div class="row">
+                <!-- العمود الأول -->
+                <div class="col-md-6">
+                    <!-- حقل الاسم -->
+                    <div class="form-group">
+                        <label for="{{ form.name.id_for_label }}" class="form-label required">الاسم الكامل</label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                            <span class="error-message">{{ form.name.errors.0 }}</span>
+                        {% endif %}
+                        <small class="form-text text-muted">أدخل الاسم الكامل للموظف</small>
+                    </div>
+                    
+                    <!-- حقل القسم -->
+                    <div class="form-group">
+                        <label for="{{ form.department.id_for_label }}" class="form-label required">القسم</label>
+                        {{ form.department }}
+                        {% if form.department.errors %}
+                            <span class="error-message">{{ form.department.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- حقل نوع التوظيف -->
+                    <div class="form-group">
+                        <label for="{{ form.employee_type.id_for_label }}" class="form-label required">نوع التوظيف</label>
+                        {{ form.employee_type }}
+                        {% if form.employee_type.errors %}
+                            <span class="error-message">{{ form.employee_type.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- حقل الراتب -->
+                    <div class="form-group">
+                        <label for="{{ form.salary.id_for_label }}" class="form-label required">الراتب</label>
+                        <div class="input-group">
+                            {{ form.salary }}
+                            <span class="input-group-text">ر.س</span>
+                        </div>
+                        {% if form.salary.errors %}
+                            <span class="error-message">{{ form.salary.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- العمود الثاني -->
+                <div class="col-md-6">
+                    <!-- حقل تاريخ التعيين -->
+                    <div class="form-group">
+                        <label for="{{ form.hire_date.id_for_label }}" class="form-label required">تاريخ التعيين</label>
+                        {{ form.hire_date }}
+                        {% if form.hire_date.errors %}
+                            <span class="error-message">{{ form.hire_date.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- حقل رقم الهاتف -->
+                    <div class="form-group">
+                        <label for="{{ form.phone.id_for_label }}" class="form-label">رقم الهاتف</label>
+                        <div class="input-group">
+                            {{ form.phone }}
+                            <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                        </div>
+                        {% if form.phone.errors %}
+                            <span class="error-message">{{ form.phone.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- حقل البريد الإلكتروني -->
+                    <div class="form-group">
+                        <label for="{{ form.email.id_for_label }}" class="form-label">البريد الإلكتروني</label>
+                        <div class="input-group">
+                            {{ form.email }}
+                            <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                        </div>
+                        {% if form.email.errors %}
+                            <span class="error-message">{{ form.email.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- حقل صورة الموظف -->
+                    <div class="form-group">
+                        <label for="{{ form.image.id_for_label }}" class="form-label">صورة الموظف</label>
+                        <div class="image-upload-container" id="imageUploadContainer">
+                            {% if form.instance.image %}
+                                <div class="image-preview-container">
+                                    <img src="{{ form.instance.image.url }}" alt="صورة الموظف" class="image-preview" id="imagePreview">
+                                    <button type="button" class="btn btn-sm btn-outline-danger mt-2" id="removeImageBtn">
+                                        <i class="fas fa-trash-alt"></i> إزالة الصورة
+                                    </button>
+                                </div>
+                            {% else %}
+                                <div class="upload-icon">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                </div>
+                                <div class="upload-text">انقر لرفع صورة الموظف</div>
+                                <small class="text-muted">(اختياري)</small>
+                            {% endif %}
+                            {{ form.image }}
+                        </div>
+                        {% if form.image.errors %}
+                            <span class="error-message">{{ form.image.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- حقل العنوان -->
+            <div class="form-group">
+                <label for="{{ form.address.id_for_label }}" class="form-label">العنوان التفصيلي</label>
+                {{ form.address }}
+                {% if form.address.errors %}
+                    <span class="error-message">{{ form.address.errors.0 }}</span>
+                {% endif %}
+            </div>
+            
+            <!-- حقل المدير المسؤول -->
+            <div class="form-group">
+                <label for="{{ form.manager.id_for_label }}" class="form-label">المدير المسؤول</label>
+                {{ form.manager }}
+                {% if form.manager.errors %}
+                    <span class="error-message">{{ form.manager.errors.0 }}</span>
+                {% endif %}
+            </div>
+            
+            <!-- أزرار الحفظ والإلغاء -->
+            <div class="d-flex justify-content-end mt-4">
+                <button type="submit" class="btn btn-save btn-form">
+                    <i class="fas fa-save"></i> حفظ
+                </button>
+                <a href="{% if form.instance.pk %}{% url 'employee_detail' form.instance.pk %}{% else %}{% url 'employee_list' %}{% endif %}" 
+                   class="btn btn-cancel btn-form">
+                    <i class="fas fa-times"></i> إلغاء
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // معاينة الصورة عند الاختيار
+    const imageInput = document.getElementById('{{ form.image.id_for_label }}');
+    const imageUploadContainer = document.getElementById('imageUploadContainer');
+    const imagePreview = document.getElementById('imagePreview');
+    const removeImageBtn = document.getElementById('removeImageBtn');
+    
+    if (imageInput) {
+        // جعل الحاوية قابلة للنقر
+        imageUploadContainer.addEventListener('click', function() {
+            imageInput.click();
+        });
+        
+        imageInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    if (!imagePreview) {
+                        // إنشاء معاينة جديدة إذا لم تكن موجودة
+                        const previewContainer = document.createElement('div');
+                        previewContainer.className = 'image-preview-container';
+                        
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.alt = 'معاينة الصورة';
+                        img.className = 'image-preview';
+                        img.id = 'imagePreview';
+                        
+                        const removeBtn = document.createElement('button');
+                        removeBtn.type = 'button';
+                        removeBtn.className = 'btn btn-sm btn-outline-danger mt-2';
+                        removeBtn.id = 'removeImageBtn';
+                        removeBtn.innerHTML = '<i class="fas fa-trash-alt"></i> إزالة الصورة';
+                        
+                        previewContainer.appendChild(img);
+                        previewContainer.appendChild(removeBtn);
+                        imageUploadContainer.innerHTML = '';
+                        imageUploadContainer.appendChild(previewContainer);
+                        
+                        // إضافة حدث للنقر على زر الإزالة
+                        removeBtn.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            removeImage();
+                        });
+                    } else {
+                        // تحديث المعاينة الحالية
+                        imagePreview.src = e.target.result;
+                    }
+                }
+                
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+    }
+    
+    // وظيفة إزالة الصورة
+    function removeImage() {
+        if (confirm('هل أنت متأكد من رغبتك في إزالة الصورة؟')) {
+            imageInput.value = '';
+            
+            // عرض واجهة الرفع الأصلية
+            imageUploadContainer.innerHTML = `
+                <div class="upload-icon">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                </div>
+                <div class="upload-text">انقر لرفع صورة الموظف</div>
+                <small class="text-muted">(اختياري)</small>
+                ${imageInput.outerHTML}
+            `;
+            
+            // إعادة تعيين عنصر الإدخال وإضافة الأحداث
+            const newImageInput = document.getElementById('{{ form.image.id_for_label }}');
+            newImageInput.style.display = 'none';
+            
+            // إضافة حقل مخفي للإشارة إلى إزالة الصورة إذا كانت موجودة مسبقًا
+            if ('{{ form.instance.image }}') {
+                const deleteInput = document.createElement('input');
+                deleteInput.type = 'hidden';
+                deleteInput.name = 'image-clear';
+                deleteInput.id = 'image-clear_id';
+                deleteInput.value = 'on';
+                imageUploadContainer.appendChild(deleteInput);
+            }
+        }
+    }
+    
+    // إضافة حدث لزر الإزالة إذا كان موجودًا
+    if (removeImageBtn) {
+        removeImageBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            removeImage();
+        });
+    }
+    
+    // التأكيد قبل مغادرة الصفحة إذا كان هناك تغييرات
+    const form = document.querySelector('form');
+    let formChanged = false;
+    
+    form.querySelectorAll('input, select, textarea').forEach(element => {
+        element.addEventListener('change', function() {
+            formChanged = true;
+        });
+    });
+    
+    window.addEventListener('beforeunload', function(e) {
+        if (formChanged) {
+            e.preventDefault();
+            e.returnValue = 'لديك تغييرات غير محفوظة، هل تريد المغادرة دون الحفظ؟';
+        }
+    });
+    
+    // إرسال النموذج عند الضغط على Enter في حقول النموذج
+    form.querySelectorAll('input').forEach(input => {
+        input.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.target.matches('textarea, [type="file"]')) {
+                e.preventDefault();
+                form.querySelector('button[type="submit"]').click();
+            }
+        });
+    });
+    
+    // إخفاء حقل رفع الصورة
+    if (imageInput) {
+        imageInput.style.display = 'none';
+    }
+    
+    // إضافة تأثيرات لحقول النموذج
+    const formGroups = document.querySelectorAll('.form-group');
+    formGroups.forEach(group => {
+        const input = group.querySelector('input, select, textarea');
+        
+        if (input) {
+            input.addEventListener('focus', function() {
+                group.style.transform = 'translateX(8px)';
+                this.parentNode.querySelector('.input-group-text').style.backgroundColor = '#e9ecef';
+            });
+            
+            input.addEventListener('blur', function() {
+                group.style.transform = 'translateX(0)';
+                if (this.parentNode.querySelector('.input-group-text')) {
+                    this.parentNode.querySelector('.input-group-text').style.backgroundColor = '#f8f9fa';
+                }
+            });
+        }
+    });
+    
+    // التحقق من الصحة قبل الإرسال
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        // التحقق من الحقول المطلوبة
+        document.querySelectorAll('[required]').forEach(field => {
+            if (!field.value.trim()) {
+                field.classList.add('is-invalid');
+                isValid = false;
+                
+                // إنشاء رسالة خطأ إذا لم تكن موجودة
+                if (!field.nextElementSibling || !field.nextElementSibling.classList.contains('error-message')) {
+                    const errorMsg = document.createElement('span');
+                    errorMsg.className = 'error-message';
+                    errorMsg.textContent = 'هذا الحقل مطلوب';
+                    field.parentNode.insertBefore(errorMsg, field.nextSibling);
+                }
+            }
+        });
+        
+        if (!isValid) {
+            e.preventDefault();
+            
+            // التمرير إلى أول حقل غير صالح
+            const firstInvalid = document.querySelector('.is-invalid');
+            if (firstInvalid) {
+                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        } else {
+            formChanged = false;
+        }
+    });
+});
+</script>
+{% endblock %}

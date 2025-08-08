@@ -1,0 +1,1089 @@
+{% extends 'employees/base.html' %} 
+{% load static %} 
+
+{% block title %}نظام إدارة الموظفين | زينوس{% endblock %} 
+
+{% block styles %}
+<style>
+  /* أنماط الخلفية المتحركة */
+  #particles-js {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: -1;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%);
+  }
+
+  /* تحسينات التصميم العامة */
+  .container-fluid {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* تحسين بطاقات الإحصائيات */
+  .stat-card {
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    backdrop-filter: blur(5px);
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    position: relative;
+  }
+
+  .stat-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      45deg,
+      rgba(58, 123, 213, 0.1),
+      rgba(0, 210, 255, 0.05)
+    );
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .stat-card:hover::before {
+    opacity: 1;
+  }
+
+  .stat-card h3 {
+    position: relative;
+    color: #2c3e50;
+  }
+
+  .stat-card i {
+    position: absolute;
+    right: 15px;
+    bottom: 15px;
+    opacity: 0.2;
+    transition: all 0.3s ease;
+  }
+
+  .stat-card:hover i {
+    transform: scale(1.2);
+    opacity: 0.3;
+  }
+
+  /* تحسين الأفاتار */
+  .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 18px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .manager-avatar {
+    background: linear-gradient(45deg, #3a7bd5, #00d2ff);
+  }
+
+  .employee-avatar {
+    background: linear-gradient(45deg, #ff758c, #ff7eb3);
+  }
+
+  /* تأثيرات الأزرار */
+  .btn-zinos {
+    background: linear-gradient(45deg, #3a7bd5, #00d2ff);
+    color: white;
+    border: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(58, 123, 213, 0.2);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-zinos::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.2),
+      rgba(255, 255, 255, 0.1)
+    );
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+
+  .btn-zinos:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(58, 123, 213, 0.3);
+    color: white;
+  }
+
+  .btn-zinos:hover::after {
+    transform: translateX(0);
+  }
+
+  /* تأثيرات البطاقات */
+  .card {
+    border: none;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    position: relative;
+  }
+
+  .card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, rgba(58, 123, 213, 0.05), transparent);
+    pointer-events: none;
+  }
+
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+  }
+
+  .card-header {
+    border-bottom: none;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card-header::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.5), transparent);
+  }
+
+  /* تحسين الجدول */
+  .table {
+    background: transparent;
+    margin-bottom: 0;
+  }
+
+  .table th {
+    border-top: none;
+    font-weight: 600;
+    color: #495057;
+    background-color: rgba(248, 249, 250, 0.7);
+    padding: 12px 15px;
+  }
+
+  .table td {
+    padding: 12px 15px;
+    vertical-align: middle;
+    border-color: rgba(0, 0, 0, 0.03);
+  }
+
+  .table-hover tbody tr:hover {
+    background-color: rgba(58, 123, 213, 0.05);
+  }
+
+  /* تأثيرات الأيقونات */
+  .action-icon {
+    transition: all 0.3s ease;
+    opacity: 0.7;
+    display: inline-block;
+    width: 28px;
+    height: 28px;
+    line-height: 28px;
+    text-align: center;
+    border-radius: 50%;
+  }
+
+  .action-icon:hover {
+    transform: scale(1.3);
+    opacity: 1;
+  }
+
+  .fa-eye:hover {
+    background: rgba(58, 123, 213, 0.1);
+  }
+
+  .fa-edit:hover {
+    background: rgba(255, 193, 7, 0.1);
+  }
+
+  .fa-trash:hover {
+    background: rgba(220, 53, 69, 0.1);
+  }
+
+  /* رسالة فارغة */
+  .empty-message {
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 12px;
+    padding: 30px;
+    text-align: center;
+    border: 1px dashed rgba(0, 0, 0, 0.1);
+  }
+
+  .empty-message i {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    color: rgba(0, 0, 0, 0.2);
+  }
+
+  /* شريط البحث */
+  .filter-bar {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(5px);
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  #employee-search {
+    border-radius: 20px;
+    padding: 8px 15px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+  }
+
+  #employee-search:focus {
+    border-color: #3a7bd5;
+    box-shadow: 0 0 0 0.2rem rgba(58, 123, 213, 0.1);
+  }
+
+  .filter-btn {
+    border-radius: 20px;
+    padding: 5px 15px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .filter-btn.active {
+    background: linear-gradient(45deg, #3a7bd5, #00d2ff);
+    color: white;
+    box-shadow: 0 2px 5px rgba(58, 123, 213, 0.2);
+  }
+
+  .filter-btn:not(.active):hover {
+    background: rgba(58, 123, 213, 0.1);
+  }
+
+  /* ألوان البادجات */
+  .badge {
+    font-weight: 500;
+    padding: 5px 10px;
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .badge.bg-primary {
+    background: linear-gradient(45deg, #3a7bd5, #00d2ff) !important;
+  }
+
+  .badge.bg-success {
+    background: linear-gradient(45deg, #4caf50, #8bc34a) !important;
+  }
+
+  .badge.bg-info {
+    background: linear-gradient(45deg, #00bcd4, #00d2ff) !important;
+  }
+
+  .badge.bg-secondary {
+    background: linear-gradient(45deg, #757575, #9e9e9e) !important;
+  }
+
+  .badge.bg-warning {
+    background: linear-gradient(45deg, #ffa000, #ffc107) !important;
+    color: #212529;
+  }
+
+  /* تأثيرات خاصة للبطاقات */
+  .header {
+    background: rgba(255, 255, 255, 0.9) !important;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .header::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, rgba(58, 123, 213, 0.05), transparent);
+    pointer-events: none;
+  }
+
+  /* تأثيرات الحركة */
+  .animate__animated {
+    animation-duration: 0.5s;
+  }
+
+  /* تأثيرات خاصة للهيدر */
+  .text-primary {
+    color: #3a7bd5 !important;
+  }
+
+  /* تحسينات للعناوين */
+  h4,
+  h5,
+  h6 {
+    font-weight: 600;
+  }
+
+  /* تأثيرات الظل للنصوص */
+  .text-shadow {
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  /* تأثيرات التحميل */
+  .loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    backdrop-filter: blur(5px);
+  }
+
+  .spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid rgba(58, 123, 213, 0.2);
+    border-radius: 50%;
+    border-top-color: #3a7bd5;
+    animation: spin 1s ease-in-out infinite;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+</style>
+{% endblock %} 
+
+{% block content %}
+<div class="container-fluid py-4 px-4">
+  <!-- الهيدر المعدل -->
+  <div class="header bg-white rounded-3 shadow-sm mb-4 p-4 animate__animated animate__fadeIn">
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <h4 class="fw-bold text-primary mb-1">
+          <i class="fas fa-users-cog me-2"></i> نظام إدارة الموظفين
+        </h4>
+        <p class="text-muted mb-0">إدارة كاملة لموظفي شركة زينوس</p>
+      </div>
+      <div class="d-flex">
+        <button id="export-excel" class="btn btn-sm btn-zinos me-2">
+          <i class="fas fa-file-excel me-1"></i> تصدير Excel
+        </button>
+        <a href="/admin/employees/employee/add/" class="btn btn-sm btn-zinos">
+          <i class="fas fa-plus me-1"></i> إضافة موظف
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- بطاقات الإحصائيات المعدلة -->
+  <div class="stats-container row g-3 mb-4 animate__animated animate__fadeInUp">
+    <div class="col-md-3 col-6">
+      <div class="stat-card p-3 h-100">
+        <h6 class="text-muted mb-2">إجمالي الموظفين</h6>
+        <h3 class="fw-bold">{{ employees.count|add:managers.count }}</h3>
+        <i class="fas fa-users text-primary"></i>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="stat-card p-3 h-100">
+        <h6 class="text-muted mb-2">عدد المديرين</h6>
+        <h3 class="fw-bold">{{ managers.count }}</h3>
+        <i class="fas fa-user-tie text-primary"></i>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="stat-card p-3 h-100">
+        <h6 class="text-muted mb-2">دوام كامل</h6>
+        <h3 class="fw-bold">{{ full_time_count }}</h3>
+        <i class="fas fa-clock text-primary"></i>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="stat-card p-3 h-100">
+        <h6 class="text-muted mb-2">دوام جزئي</h6>
+        <h3 class="fw-bold">{{ part_time_count }}</h3>
+        <i class="fas fa-business-time text-primary"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- شريط البحث والتصفية المعدل -->
+  <div class="filter-bar bg-white rounded-3 shadow-sm p-3 mb-4 animate__animated animate__fadeIn">
+    <div class="row align-items-center">
+      <div class="col-md-6 mb-2 mb-md-0">
+        <div class="input-group">
+          <input
+            type="text"
+            id="employee-search"
+            class="form-control border-end-0"
+            placeholder="ابحث عن موظف بالاسم أو القسم..."
+          />
+          <span class="input-group-text bg-transparent border-start-0">
+            <i class="fas fa-search text-muted"></i>
+          </span>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="d-flex flex-wrap justify-content-md-end">
+          <button
+            class="btn btn-sm btn-outline-primary mx-1 mb-1 filter-btn active"
+            data-filter="all"
+          >
+            الكل ({{ employees.count|add:managers.count }})
+          </button>
+          <button
+            class="btn btn-sm btn-outline-primary mx-1 mb-1 filter-btn"
+            data-filter="manager"
+          >
+            المديرون ({{ managers.count }})
+          </button>
+          <button
+            class="btn btn-sm btn-outline-primary mx-1 mb-1 filter-btn"
+            data-filter="full_time"
+          >
+            دوام كامل ({{ full_time_count }})
+          </button>
+          <button
+            class="btn btn-sm btn-outline-primary mx-1 mb-1 filter-btn"
+            data-filter="part_time"
+          >
+            دوام جزئي ({{ part_time_count }})
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- قسم المديرين المعدل -->
+  <div class="card border-0 shadow-sm mb-4 animate__animated animate__fadeIn">
+    <div class="card-header bg-primary text-white rounded-top">
+      <div class="d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="fas fa-user-tie me-2"></i> فريق الإدارة</h5>
+        <span class="badge bg-white text-primary">{{ managers.count }} مدير</span>
+      </div>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th width="25%">المدير</th>
+              <th width="15%">القسم</th>
+              <th width="10%">الموظفين</th>
+              <th width="15%">نوع التوظيف</th>
+              <th width="15%">تاريخ التعيين</th>
+              <th width="10%">الحالة</th>
+              <th width="10%">الإجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="managers-table-body">
+            {% for manager in managers %}
+            <tr
+              class="employee-row"
+              data-type="manager {{ manager.employee_type }}"
+              data-name="{{ manager.name }}"
+              data-department="{{ manager.department.name|default:'' }}"
+            >
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="avatar manager-avatar me-3">
+                    {{ manager.name|slice:":1" }}
+                  </div>
+                  <div>
+                    <strong>{{ manager.name }}</strong>
+                    <div class="text-muted small">
+                      {{ manager.email|default:"-" }}
+                    </div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="badge bg-secondary">{{ manager.department.name|default:"-" }}</span>
+              </td>
+              <td>
+                <span class="badge rounded-pill bg-primary">{{ manager.subordinates.count }}</span>
+              </td>
+              <td>
+                <span class="badge bg-{{ manager.employee_type }}">
+                  {{ manager.get_employee_type_display }}
+                </span>
+              </td>
+              <td>
+                <span class="text-muted">{{ manager.hire_date|date:"Y/m/d"|default:"-" }}</span>
+              </td>
+              <td>
+                <span class="badge bg-success">نشط</span>
+              </td>
+              <td>
+                <div class="d-flex justify-content-between">
+                  <a href="{% url 'employees:employee_detail' pk=manager.pk %}" class="text-primary action-icon">
+                    <i class="fas fa-eye"></i>
+                  </a>
+                  <a
+                    href="/admin/employees/employee/{{ manager.pk }}/change/"
+                    class="text-warning action-icon"
+                  >
+                    <i class="fas fa-edit"></i>
+                  </a>
+                  <a
+                    href="/admin/employees/employee/{{ manager.pk }}/delete/"
+                    class="text-danger action-icon"
+                  >
+                    <i class="fas fa-trash"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="7" class="text-center py-5">
+                <div class="empty-message py-4">
+                  <i class="fas fa-user-tie fs-1 text-muted mb-3"></i>
+                  <h5 class="text-muted">لا يوجد مديرون مسجلون</h5>
+                  <a
+                    href="/admin/employees/employee/add/"
+                    class="btn btn-sm btn-zinos mt-3"
+                  >
+                    <i class="fas fa-plus me-1"></i> إضافة مدير جديد
+                  </a>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- قسم جميع الموظفين المعدل -->
+  <div class="card border-0 shadow-sm animate__animated animate__fadeIn">
+    <div class="card-header bg-primary text-white rounded-top">
+      <div class="d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="fas fa-users me-2"></i> جميع الموظفين</h5>
+        <span class="badge bg-white text-primary">{{ employees.count }} موظف</span>
+      </div>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th width="20%">الموظف</th>
+              <th width="15%">القسم</th>
+              <th width="15%">المدير المسؤول</th>
+              <th width="10%">نوع التوظيف</th>
+              <th width="10%">تاريخ التعيين</th>
+              <th width="10%">الراتب</th>
+              <th width="10%">الحالة</th>
+              <th width="10%">الإجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="employees-table-body">
+            {% for employee in employees %}
+            <tr
+              class="employee-row"
+              data-type="{{ employee.employee_type }}"
+              data-name="{{ employee.name }}"
+              data-department="{{ employee.department.name|default:'' }}"
+            >
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="avatar employee-avatar me-3">
+                    {{ employee.name|slice:":1" }}
+                  </div>
+                  <div>
+                    <strong>{{ employee.name }}</strong>
+                    <div class="text-muted small">
+                      {{ employee.phone|default:"-" }}
+                    </div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="badge bg-secondary">{{ employee.department.name|default:"-" }}</span>
+              </td>
+              <td>
+                {% if employee.manager %}
+                <a
+                  href="{% url 'employees:employee_detail' pk=employee.manager.pk %}"
+                  class="badge bg-info text-decoration-none"
+                >
+                  {{ employee.manager.name }}
+                </a>
+                {% else %}
+                <span class="badge bg-secondary">غير معين</span>
+                {% endif %}
+              </td>
+              <td>
+                <span class="badge bg-{{ employee.employee_type }}">
+                  {{ employee.get_employee_type_display }}
+                </span>
+              </td>
+              <td>
+                <span class="text-muted">{{ employee.hire_date|date:"Y/m/d"|default:"-" }}</span>
+              </td>
+              <td>
+                <span class="badge bg-success">{{ employee.salary }} ر.س</span>
+              </td>
+              <td>
+                <span class="badge bg-success">نشط</span>
+              </td>
+              <td>
+                <div class="d-flex justify-content-between">
+                  <a
+                    href="{% url 'employees:employee_detail' pk=employee.pk %}"
+                    class="text-primary action-icon"
+                  >
+                    <i class="fas fa-eye"></i>
+                  </a>
+                  <a
+                    href="/admin/employees/employee/{{ employee.pk }}/change/"
+                    class="text-warning action-icon"
+                  >
+                    <i class="fas fa-edit"></i>
+                  </a>
+                  <a
+                    href="/admin/employees/employee/{{ employee.pk }}/delete/"
+                    class="text-danger action-icon"
+                  >
+                    <i class="fas fa-trash"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="8" class="text-center py-5">
+                <div class="empty-message py-4">
+                  <i class="fas fa-users fs-1 text-muted mb-3"></i>
+                  <h5 class="text-muted">لا يوجد موظفون مسجلون</h5>
+                  <a
+                    href="/admin/employees/employee/add/"
+                    class="btn btn-sm btn-zinos mt-3"
+                  >
+                    <i class="fas fa-plus me-1"></i> إضافة موظف جديد
+                  </a>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- إضافة مكتبة الجسيمات المتحركة -->
+<script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // تهيئة الخلفية المتحركة
+    particlesJS("particles-js", {
+      particles: {
+        number: {
+          value: 60,
+          density: {
+            enable: true,
+            value_area: 800,
+          },
+        },
+        color: {
+          value: "#3a7bd5",
+        },
+        shape: {
+          type: "circle",
+          stroke: {
+            width: 0,
+            color: "#000000",
+          },
+          polygon: {
+            nb_sides: 5,
+          },
+        },
+        opacity: {
+          value: 0.3,
+          random: true,
+          anim: {
+            enable: true,
+            speed: 1,
+            opacity_min: 0.1,
+            sync: false,
+          },
+        },
+        size: {
+          value: 3,
+          random: true,
+          anim: {
+            enable: true,
+            speed: 2,
+            size_min: 0.1,
+            sync: false,
+          },
+        },
+        line_linked: {
+          enable: true,
+          distance: 150,
+          color: "#3a7bd5",
+          opacity: 0.2,
+          width: 1,
+        },
+        move: {
+          enable: true,
+          speed: 1,
+          direction: "none",
+          random: true,
+          straight: false,
+          out_mode: "out",
+          bounce: false,
+          attract: {
+            enable: true,
+            rotateX: 600,
+            rotateY: 1200,
+          },
+        },
+      },
+      interactivity: {
+        detect_on: "canvas",
+        events: {
+          onhover: {
+            enable: true,
+            mode: "grab",
+          },
+          onclick: {
+            enable: true,
+            mode: "push",
+          },
+          resize: true,
+        },
+        modes: {
+          grab: {
+            distance: 140,
+            line_linked: {
+              opacity: 0.5,
+            },
+          },
+          bubble: {
+            distance: 400,
+            size: 40,
+            duration: 2,
+            opacity: 8,
+            speed: 3,
+          },
+          repulse: {
+            distance: 200,
+            duration: 0.4,
+          },
+          push: {
+            particles_nb: 4,
+          },
+          remove: {
+            particles_nb: 2,
+          },
+        },
+      },
+      retina_detect: true,
+    });
+
+    // تأثيرات الأيقونات
+    const actionIcons = document.querySelectorAll(".action-icon");
+    actionIcons.forEach((icon) => {
+      icon.addEventListener("mouseenter", function () {
+        this.style.transform = "scale(1.3)";
+      });
+
+      icon.addEventListener("mouseleave", function () {
+        this.style.transform = "scale(1)";
+      });
+    });
+
+    // تأثيرات بطاقات الإحصائيات
+    const statCards = document.querySelectorAll(".stat-card");
+    statCards.forEach((card) => {
+      card.addEventListener("mouseenter", function () {
+        this.style.transform = "translateY(-5px)";
+        this.style.boxShadow = "0 15px 30px rgba(0,0,0,0.1)";
+      });
+
+      card.addEventListener("mouseleave", function () {
+        this.style.transform = "translateY(0)";
+        this.style.boxShadow = "0 4px 6px rgba(0,0,0,0.05)";
+      });
+    });
+
+    // وظائف البحث والتصفية
+    const searchInput = document.getElementById("employee-search");
+    const filterButtons = document.querySelectorAll(".filter-btn");
+    const employeeRows = document.querySelectorAll(".employee-row");
+
+    // وظيفة البحث
+    function searchEmployees() {
+      const searchTerm = searchInput.value.toLowerCase();
+
+      employeeRows.forEach((row) => {
+        const name = row.dataset.name.toLowerCase();
+        const department = row.dataset.department.toLowerCase();
+
+        if (name.includes(searchTerm) || department.includes(searchTerm)) {
+          row.style.display = "";
+        } else {
+          row.style.display = "none";
+        }
+      });
+
+      setTimeout(checkEmptyTables, 100);
+    }
+
+    // وظيفة التصفية
+    function filterEmployees(filter) {
+      employeeRows.forEach((row) => {
+        const rowTypes = row.dataset.type.toLowerCase();
+
+        if (filter === "all" || rowTypes.includes(filter)) {
+          row.style.display = "";
+        } else {
+          row.style.display = "none";
+        }
+      });
+
+      setTimeout(checkEmptyTables, 100);
+    }
+
+    // أحداث البحث
+    searchInput.addEventListener("input", searchEmployees);
+
+    // أحداث التصفية
+    filterButtons.forEach((btn) => {
+      btn.addEventListener("click", function () {
+        filterButtons.forEach((b) => b.classList.remove("active"));
+        this.classList.add("active");
+
+        const filter = this.dataset.filter;
+        filterEmployees(filter);
+      });
+    });
+
+    // عرض رسالة إذا لم توجد نتائج بحث
+    function checkEmptyTables() {
+      const managersTable = document.getElementById("managers-table-body");
+      const employeesTable = document.getElementById("employees-table-body");
+
+      const visibleManagers = managersTable.querySelectorAll(
+        'tr.employee-row[style=""]'
+      ).length;
+      const visibleEmployees = employeesTable.querySelectorAll(
+        'tr.employee-row[style=""]'
+      ).length;
+
+      if (
+        visibleManagers === 0 &&
+        managersTable.querySelectorAll("tr.employee-row").length > 0
+      ) {
+        managersTable.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center py-5">
+                        <div class="empty-message py-4">
+                            <i class="fas fa-user-tie fs-1 text-muted mb-3"></i>
+                            <h5 class="text-muted">لا توجد نتائج مطابقة للبحث</h5>
+                        </div>
+                    </td>
+                </tr>
+            `;
+      }
+
+      if (
+        visibleEmployees === 0 &&
+        employeesTable.querySelectorAll("tr.employee-row").length > 0
+      ) {
+        employeesTable.innerHTML = `
+                <tr>
+                    <td colspan="8" class="text-center py-5">
+                        <div class="empty-message py-4">
+                            <i class="fas fa-users fs-1 text-muted mb-3"></i>
+                            <h5 class="text-muted">لا توجد نتائج مطابقة للبحث</h5>
+                        </div>
+                    </td>
+                </tr>
+            `;
+      }
+    }
+
+    // التحقق من الجداول الفارغة عند البحث/التصفية
+    searchInput.addEventListener("input", checkEmptyTables);
+
+    filterButtons.forEach((btn) => {
+      btn.addEventListener("click", checkEmptyTables);
+    });
+
+    // تصدير البيانات إلى Excel
+    document
+      .getElementById("export-excel")
+      .addEventListener("click", function () {
+        // عرض شاشة التحميل
+        const loadingOverlay = document.createElement("div");
+        loadingOverlay.className = "loading-overlay";
+        loadingOverlay.innerHTML = '<div class="spinner"></div>';
+        document.body.appendChild(loadingOverlay);
+
+        // إنشاء مصنف Excel
+        const wb = XLSX.utils.book_new();
+
+        // تحضير بيانات المديرين
+        const managersData = [
+          [
+            "الاسم",
+            "البريد الإلكتروني",
+            "القسم",
+            "عدد الموظفين",
+            "نوع التوظيف",
+            "تاريخ التعيين",
+            "الحالة",
+          ],
+        ];
+
+        document
+          .querySelectorAll("#managers-table-body tr.employee-row")
+          .forEach((row) => {
+            if (row.style.display !== "none") {
+              const name = row.querySelector(
+                "td:nth-child(1) strong"
+              ).textContent;
+              const email = row.querySelector(
+                "td:nth-child(1) .text-muted"
+              ).textContent;
+              const department = row.querySelector(
+                "td:nth-child(2) .badge"
+              ).textContent;
+              const employeesCount = row.querySelector(
+                "td:nth-child(3) .badge"
+              ).textContent;
+              const employmentType = row.querySelector(
+                "td:nth-child(4) .badge"
+              ).textContent;
+              const hireDate = row
+                .querySelector("td:nth-child(5)")
+                .textContent.trim();
+              const status = row.querySelector(
+                "td:nth-child(6) .badge"
+              ).textContent;
+
+              managersData.push([
+                name,
+                email,
+                department,
+                employeesCount,
+                employmentType,
+                hireDate,
+                status,
+              ]);
+            }
+          });
+
+        // تحضير بيانات الموظفين
+        const employeesData = [
+          [
+            "الاسم",
+            "الهاتف",
+            "القسم",
+            "المدير المسؤول",
+            "نوع التوظيف",
+            "تاريخ التعيين",
+            "الراتب",
+            "الحالة",
+          ],
+        ];
+
+        document
+          .querySelectorAll("#employees-table-body tr.employee-row")
+          .forEach((row) => {
+            if (row.style.display !== "none") {
+              const name = row.querySelector(
+                "td:nth-child(1) strong"
+              ).textContent;
+              const phone = row.querySelector(
+                "td:nth-child(1) .text-muted"
+              ).textContent;
+              const department = row.querySelector(
+                "td:nth-child(2) .badge"
+              ).textContent;
+              const manager = row.querySelector(
+                "td:nth-child(3) .badge"
+              ).textContent;
+              const employmentType = row.querySelector(
+                "td:nth-child(4) .badge"
+              ).textContent;
+              const hireDate = row
+                .querySelector("td:nth-child(5)")
+                .textContent.trim();
+              const salary = row.querySelector(
+                "td:nth-child(6) .badge"
+              ).textContent;
+              const status = row.querySelector(
+                "td:nth-child(7) .badge"
+              ).textContent;
+
+              employeesData.push([
+                name,
+                phone,
+                department,
+                manager,
+                employmentType,
+                hireDate,
+                salary,
+                status,
+              ]);
+            }
+          });
+
+        // إضافة الأوراق إلى المصنف
+        const managersWS = XLSX.utils.aoa_to_sheet(managersData);
+        const employeesWS = XLSX.utils.aoa_to_sheet(employeesData);
+
+        XLSX.utils.book_append_sheet(wb, managersWS, "المديرون");
+        XLSX.utils.book_append_sheet(wb, employeesWS, "الموظفون");
+
+        // تصدير الملف
+        const date = new Date().toISOString().slice(0, 10);
+        setTimeout(() => {
+          XLSX.writeFile(wb, `موظفو_زينوس_${date}.xlsx`);
+          document.body.removeChild(loadingOverlay);
+        }, 1000);
+      });
+  });
+</script>
+{% endblock %}
