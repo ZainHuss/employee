@@ -19,9 +19,6 @@ class EmployeeAdmin(admin.ModelAdmin):
                    'salary_display', 'hire_date_display', 'manager_info', 
                    'contact_info', 'image_preview')
     
-                   'salary_display', 'hire_date_display', 'manager_info', 
-                   'contact_info', 'image_preview')
-    
     list_filter = ('department', 'employee_type')
     search_fields = ('name', 'department__name', 'phone', 'email')
     list_select_related = ('department', 'manager')
@@ -29,7 +26,6 @@ class EmployeeAdmin(admin.ModelAdmin):
     
     fieldsets = (
         ('المعلومات الأساسية', {
-            'fields': ('name', 'department', 'employee_type', 'salary', 'hire_date', 'image')
             'fields': ('name', 'department', 'employee_type', 'salary', 'hire_date', 'image')
         }),
         ('معلومات الاتصال', {
@@ -39,8 +35,6 @@ class EmployeeAdmin(admin.ModelAdmin):
             'fields': ('manager',)
         }),
     )
-    
-    readonly_fields = ('image_preview',)
     
     readonly_fields = ('image_preview',)
     
@@ -64,7 +58,6 @@ class EmployeeAdmin(admin.ModelAdmin):
         if obj.manager:
             return format_html('<a href="{}">{}</a>', 
                              f'/admin/employees/employee/{obj.manager.id}/change/',
-                             f'/admin/employees/employee/{obj.manager.id}/change/',
                              obj.manager.name)
         return '-'
     manager_info.short_description = 'المدير المسؤول'
@@ -79,22 +72,18 @@ class EmployeeAdmin(admin.ModelAdmin):
     contact_info.short_description = 'معلومات الاتصال'
     
     def image_preview(self, obj):
-        if obj.image:  # إذا كان هناك صورة
-            if hasattr(obj.image, 'url'):  # إذا كان حقل الصورة من نوع FileField/ImageField
+        if obj.image:
+            if hasattr(obj.image, 'url'):
                 return format_html('<img src="{}" width="50" height="50" />', obj.image.url)
-            else:  # إذا كان بيانات بايت
-                # يمكنك معالجة بيانات البايت هنا أو عرض بديل
+            else:
                 return format_html('<span>صورة مخزنة كبيانات بايت</span>')
         return "لا توجد صورة"
-    
     image_preview.short_description = 'معاينة الصورة'
 
 @admin.register(Attendance)
 class AttendanceAdmin(admin.ModelAdmin):
     list_display = ('employee_info', 'date_display', 'status_display',
-    list_display = ('employee_info', 'date_display', 'status_display',
                    'check_in_display', 'check_out_display', 'notes_short')
-    list_filter = ('date', 'status', 'employee__department')
     list_filter = ('date', 'status', 'employee__department')
     search_fields = ('employee__name', 'notes')
     list_select_related = ('employee', 'employee__department')
@@ -108,7 +97,6 @@ class AttendanceAdmin(admin.ModelAdmin):
     date_display.short_description = 'التاريخ'
     
     def status_display(self, obj):
-        # استبدل obj.is_present بـ obj.status == 'present'
         color = 'green' if obj.status == 'present' else 'red'
         return format_html(
             '<span style="color: {};">{}</span>',
@@ -132,7 +120,7 @@ class AttendanceAdmin(admin.ModelAdmin):
 @admin.register(SalaryPayment)
 class SalaryPaymentAdmin(admin.ModelAdmin):
     list_display = ('employee_info', 'period_display', 'working_days_display',
-                   'base_salary_display','net_salary_display', 'payment_date_display', 'approved_by_info')
+                   'base_salary_display', 'net_salary_display', 'payment_date_display', 'approved_by_info')
     list_filter = ('month', 'year', 'employee__department')
     search_fields = ('employee__name', 'notes')
     list_select_related = ('employee', 'approved_by', 'employee__department')
@@ -150,11 +138,11 @@ class SalaryPaymentAdmin(admin.ModelAdmin):
     working_days_display.short_description = 'أيام العمل'
 
     def net_salary_display(self, obj):
-        return obj.net_salary  # أو أي معالجة تريدها
+        return f"{obj.net_salary:,.2f} ر.س" if obj.net_salary else '-'
     net_salary_display.short_description = 'صافي الراتب'
     
     def base_salary_display(self, obj):
-        return obj.base_salary  # أو أي معالجة تريدها
+        return f"{obj.base_salary:,.2f} ر.س" if obj.base_salary else '-'
     base_salary_display.short_description = 'الراتب الأساسي'
     
     def payment_date_display(self, obj):
