@@ -1,0 +1,12 @@
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    
+    <div class="form-group">
+        <label for="id_image">صورة الموظف:</label>
+        {{ form.image }}
+        <small class="form-text text-muted">اختر صورة مناسبة للموظف</small>
+    </div>
+    
+    <!-- باقي الحقول -->
+    <button type="submit" class="btn btn-primary">حفظ</button>
+</form>
