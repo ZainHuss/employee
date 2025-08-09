@@ -6,6 +6,7 @@ from . import views
 
 app_name = 'employees'  # إضافة اسم التطبيق لتجنب التعارض
 
+from .views import export_employees_to_excel
 urlpatterns = [
     # الصفحة الرئيسية لقائمة الموظفين
     path('', views.employee_list, name='employee_list'),

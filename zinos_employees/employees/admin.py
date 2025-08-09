@@ -19,6 +19,9 @@ class EmployeeAdmin(admin.ModelAdmin):
                    'salary_display', 'hire_date_display', 'manager_info', 
                    'contact_info', 'image_preview')
     
+                   'salary_display', 'hire_date_display', 'manager_info', 
+                   'contact_info', 'image_preview')
+    
     list_filter = ('department', 'employee_type')
     search_fields = ('name', 'department__name', 'phone', 'email')
     list_select_related = ('department', 'manager')
@@ -26,6 +29,7 @@ class EmployeeAdmin(admin.ModelAdmin):
     
     fieldsets = (
         ('المعلومات الأساسية', {
+            'fields': ('name', 'department', 'employee_type', 'salary', 'hire_date', 'image')
             'fields': ('name', 'department', 'employee_type', 'salary', 'hire_date', 'image')
         }),
         ('معلومات الاتصال', {
@@ -35,6 +39,8 @@ class EmployeeAdmin(admin.ModelAdmin):
             'fields': ('manager',)
         }),
     )
+    
+    readonly_fields = ('image_preview',)
     
     readonly_fields = ('image_preview',)
     
@@ -57,6 +63,7 @@ class EmployeeAdmin(admin.ModelAdmin):
     def manager_info(self, obj):
         if obj.manager:
             return format_html('<a href="{}">{}</a>', 
+                             f'/admin/employees/employee/{obj.manager.id}/change/',
                              f'/admin/employees/employee/{obj.manager.id}/change/',
                              obj.manager.name)
         return '-'
@@ -85,7 +92,9 @@ class EmployeeAdmin(admin.ModelAdmin):
 @admin.register(Attendance)
 class AttendanceAdmin(admin.ModelAdmin):
     list_display = ('employee_info', 'date_display', 'status_display',
+    list_display = ('employee_info', 'date_display', 'status_display',
                    'check_in_display', 'check_out_display', 'notes_short')
+    list_filter = ('date', 'status', 'employee__department')
     list_filter = ('date', 'status', 'employee__department')
     search_fields = ('employee__name', 'notes')
     list_select_related = ('employee', 'employee__department')
